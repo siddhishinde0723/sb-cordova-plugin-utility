@@ -5,7 +5,8 @@
   "cordova": {
     "id": "sb-cordova-plugin-utility",
     "platforms": [
-      "android"
+      "android",
+      "ios"
     ]
   },
   "keywords": [
