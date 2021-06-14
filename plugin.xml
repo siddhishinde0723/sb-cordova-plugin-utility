@@ -47,7 +47,7 @@
     <platform name="ios">
         <config-file target="config.xml" parent="/*">
             <feature name="sbutility">
-                <param name="ios-package" value="sbutility" />
+                <param name="ios-package" value="UtilityPlugin" />
             </feature>
         </config-file>
         <source-file src="src/ios/UtilityPlugin.swift" />
