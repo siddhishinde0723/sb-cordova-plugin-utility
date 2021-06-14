@@ -8,7 +8,7 @@ package org.sunbird.config;
  */
 public class BuildConfigUtil {
 
-    private static Class<?> getBuildConfigClass(String packageName) {
+    public static Class<?> getBuildConfigClass(String packageName) {
         return ReflectionUtil.getClass(packageName + ".BuildConfig");
     }
 

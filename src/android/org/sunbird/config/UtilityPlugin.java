@@ -5,6 +5,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.ApplicationInfo;
+import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.Build;
@@ -27,12 +28,14 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.sunbird.storage.StorageUtil;
+import org.sunbird.support.SunbirdFileHandler;
 import org.sunbird.utm.InstallReferrerListener;
 import org.sunbird.utm.PlayStoreInstallReferrer;
 
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.ArrayList;
@@ -47,6 +50,7 @@ public class UtilityPlugin extends CordovaPlugin {
 
     private static final String SHARED_PREFERENCES_NAME = "org.ekstep.genieservices.preference_file";
     private CallbackContext onActivityResultCallbackContext = null;
+    private CallbackContext callbackContext;
 
 
     @Override
@@ -61,21 +65,15 @@ public class UtilityPlugin extends CordovaPlugin {
             String appId = args.getString(1);
             openGooglePlay(cordova, appId);
             callbackContext.success();
-
         } else if (action.equalsIgnoreCase("getDeviceAPILevel")) {
             getDeviceAPILevel(callbackContext);
-
         } else if (action.equalsIgnoreCase("checkAppAvailability")) {
             checkAppAvailability(cordova, args, callbackContext);
-
         } else if (action.equalsIgnoreCase("getDownloadDirectoryPath")) {
             getDownloadDirectoryPath(callbackContext);
-
         }else if (action.equalsIgnoreCase("exportApk")) {
             exportApk(args, cordova,callbackContext);
-
         }else if (action.equalsIgnoreCase("getBuildConfigValues")) {
-
             getBuildConfigValues(args,callbackContext);
         }else if (action.equalsIgnoreCase("getDeviceSpec")) {
             try {
@@ -84,42 +82,30 @@ public class UtilityPlugin extends CordovaPlugin {
                 callbackContext.error(e.getMessage());
             }
         }else if (action.equalsIgnoreCase("createDirectories")) {
-
             createDirectories(args,callbackContext);
         }else if (action.equalsIgnoreCase("writeFile")) {
-
             writeFile(args,callbackContext);
         }else if (action.equalsIgnoreCase("getMetaData")) {
-
             getMetaData(args,callbackContext);
         }else if (action.equalsIgnoreCase("getAvailableInternalMemorySize")) {
-
             getAvailableInternalMemorySize(callbackContext);
         }else if (action.equalsIgnoreCase("getUtmInfo")) {
-
             getUtmInfo(cordova, callbackContext);
             return true;
         }else if (action.equalsIgnoreCase("clearUtmInfo")) {
-
             clearUtmInfo(cordova, callbackContext);
         }else if (action.equalsIgnoreCase("getStorageVolumes")) {
-
             getStorageVolumes(cordova, callbackContext);
         }else if (action.equalsIgnoreCase("copyDirectory")) {
-
             copyDirectory(args, callbackContext);
             return true;
         }else if (action.equalsIgnoreCase("renameDirectory")) {
-
             renameDirectory(args, callbackContext);
         }else if (action.equalsIgnoreCase("canWrite")) {
-
             canWrite(args, callbackContext);
         }else if (action.equalsIgnoreCase("getFreeUsableSpace")) {
-
             getUsableSpace(args, callbackContext);
         }else if (action.equalsIgnoreCase("readFromAssets")) {
-
             readFromAssets(args, callbackContext);
             return true;
         }else if (action.equalsIgnoreCase("copyFile")) {
@@ -148,7 +134,46 @@ public class UtilityPlugin extends CordovaPlugin {
         }else if (action.equalsIgnoreCase("openFileManager")) {
             openFileManager();
             return true;
-         }
+        }else if (args.get(0).equals("makeEntryInSunbirdSupportFile")) {
+            this.callbackContext = callbackContext;
+            String filePath = null;
+            try {
+                final String packageName = this.cordova.getActivity().getPackageName();
+                PackageInfo packageInfo = this.cordova.getActivity().getPackageManager().getPackageInfo(packageName, 0);
+                final String versionName = packageInfo.versionName;
+                final String appFlavor = BuildConfigUtil.getBuildConfigValue("org.sunbird.app", "FLAVOR");
+                String appName = cordova.getActivity().getString(UtilityPlugin.getIdOfResource(cordova, "_app_name", "string"));
+                filePath = SunbirdFileHandler.makeEntryInSunbirdSupportFile(packageName, cordova.getActivity(), versionName, appName,
+                        appFlavor);
+                callbackContext.success(filePath);
+            } catch (PackageManager.NameNotFoundException | IOException e) {
+                e.printStackTrace();
+                callbackContext.error(filePath);
+            }
+        }else if (args.get(0).equals("shareSunbirdConfigurations")) {
+            String getUserCount = args.optString(1,"getUserCount");
+            String getLocalContentCount = args.optString(2,"getLocalContentCount");
+            this.callbackContext = callbackContext;
+            String filePath = null;
+            try {
+                final String packageName = this.cordova.getActivity().getPackageName();
+                PackageInfo packageInfo = this.cordova.getActivity().getPackageManager().getPackageInfo(packageName, 0);
+                final String versionName = packageInfo.versionName;
+                final String appFlavor = BuildConfigUtil.getBuildConfigValue("org.sunbird.app", "FLAVOR");
+                String appName = cordova.getActivity().getString(UtilityPlugin.getIdOfResource(cordova, "_app_name", "string"));
+                filePath = SunbirdFileHandler.shareSunbirdConfigurations(packageName, versionName, appName, appFlavor,
+                        cordova.getContext(), getUserCount, getLocalContentCount);
+                callbackContext.success(filePath);
+            } catch (PackageManager.NameNotFoundException | IOException e) {
+                e.printStackTrace();
+                callbackContext.error(filePath);
+            }
+        }else if (args.get(0).equals("removeFile")) {
+            this.callbackContext = callbackContext;
+            final String appFlavor = BuildConfigUtil.getBuildConfigValue("org.sunbird.app", "FLAVOR");
+            String appName = cordova.getActivity().getString(UtilityPlugin.getIdOfResource(cordova, "_app_name", "string"));
+            SunbirdFileHandler.removeFile(cordova.getActivity(), appName, appFlavor);
+        }
 
         return false;
     }
@@ -190,10 +215,6 @@ public class UtilityPlugin extends CordovaPlugin {
         callbackContext.success("file://" + String.valueOf(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS)) + "/");
     }
 
-    private static Class<?> getBuildConfigClass(String packageName) {
-        return ReflectionUtil.getClass(packageName + ".BuildConfig");
-    }
-
     private static void getBuildConfigParam(JSONArray args, CallbackContext callbackContext) throws JSONException {
         String param = args.getString(1);
         String value;
@@ -208,7 +229,7 @@ public class UtilityPlugin extends CordovaPlugin {
     }
 
     public static void getBuildConfigValue(String packageName, String property, CallbackContext callbackContext) {
-        Class<?> clazz = getBuildConfigClass(packageName);
+        Class<?> clazz = BuildConfigUtil.getBuildConfigClass(packageName);
         if (clazz == null) {
             callbackContext.error("packageName, can not be null or empty.");
         }
@@ -224,7 +245,7 @@ public class UtilityPlugin extends CordovaPlugin {
 
     public static void getBuildConfigValues(JSONArray args, CallbackContext callbackContext) throws JSONException {
         String packageName = args.getString(0);
-        Class<?> clazz = getBuildConfigClass(packageName);
+        Class<?> clazz = BuildConfigUtil.getBuildConfigClass(packageName);
         if(clazz == null) {
             callbackContext.error("packageName, can not be null or empty.");
         }
@@ -261,7 +282,7 @@ public class UtilityPlugin extends CordovaPlugin {
                     return;
             // Get application's name and convert to lowercase
             tempFile = new File(tempFile.getPath() + "/"
-                    + cordova.getActivity().getString(getIdOfResource(cordova, "_app_name", "string")) + "_"
+                    + cordova.getActivity().getString(UtilityPlugin.getIdOfResource(cordova, "_app_name", "string")) + "_"
                     + BuildConfigUtil.getBuildConfigValue("org.sunbird.app", "REAL_VERSION_NAME").toString().replace(".","_") + ".apk");
             // If file doesn't exists create new
             if (!tempFile.exists()) {
@@ -365,7 +386,7 @@ public class UtilityPlugin extends CordovaPlugin {
 
     private static void getAvailableInternalMemorySize(CallbackContext callbackContext)  {
         try {
-            callbackContext.success(String.valueOf(new DeviceSpecGenerator().getAvailableInternalMemorySize()));
+            callbackContext.success(String.valueOf(DeviceSpecGenerator.getAvailableInternalMemorySize()));
         } catch (Exception e) {
             callbackContext.error(e.getMessage());
         }
@@ -640,9 +661,9 @@ public class UtilityPlugin extends CordovaPlugin {
     }
 
     private void openFileManager() {
-            Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
-            Uri uri = Uri.parse(cordova.getContext().getExternalFilesDir(Environment.DIRECTORY_DOWNLOADS).toString());
-            intent.setDataAndType(uri, "*/*");
-            this.cordova.getActivity().startActivity(intent);
-        }
+        Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
+        Uri uri = Uri.parse(cordova.getContext().getExternalFilesDir(Environment.DIRECTORY_DOWNLOADS).toString());
+        intent.setDataAndType(uri, "*/*");
+        this.cordova.getActivity().startActivity(intent);
+    }
 }
