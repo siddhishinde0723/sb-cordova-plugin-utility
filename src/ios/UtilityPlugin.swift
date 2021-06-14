@@ -15,7 +15,8 @@ import Foundation
     @objc
     func getBuildConfigValue(_ command: CDVInvokedUrlCommand) {
         var pluginResult: CDVPluginResult = CDVPluginResult.init(status: CDVCommandStatus_ERROR)
-        guard let appVersion = Bundle.main.infoDictionary?["CFBundleShortVersionString"] else {
+        let appVersion = Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? ""
+        guard  appVersion != "" else {
             print("appVersion is nil")
             self.commandDelegate.send(pluginResult, callbackId: command.callbackId)
             return           
@@ -41,7 +42,7 @@ import Foundation
             self.commandDelegate.send(pluginResult, callbackId: command.callbackId)
             return
         }
-        guard let result =  try? FileManager.default.removeItem(atPath: deletingDirectoryPath) else {
+        guard let _ =  try? FileManager.default.removeItem(atPath: deletingDirectoryPath) else {
             print("Error deleting folder: \(deletingDirectoryPath)")
             self.commandDelegate.send(pluginResult, callbackId: command.callbackId)
             return
@@ -55,8 +56,8 @@ import Foundation
     func openPlayStore(_ command: CDVInvokedUrlCommand) {
         // TODO: Need to do actual implementation
         let appId = command.arguments[1] as? String 
-        print("App Id: \(appId), Skipping this implementation for now")
-        let pluginResult:CDVPluginResult = CDVPluginResult.init(status: CDVCommandStatus_OK, messageAs: "App Id: \(appId), Skipping this implementation for now")
+        print("App Id: \(String(describing:appId)), Skipping this implementation for now")
+        let pluginResult:CDVPluginResult = CDVPluginResult.init(status: CDVCommandStatus_OK, messageAs: "App Id: \(String(describing:appId)), Skipping this implementation for now")
         self.commandDelegate.send(pluginResult, callbackId: command.callbackId)
     }
 
@@ -105,19 +106,19 @@ import Foundation
         var pluginResult: CDVPluginResult = CDVPluginResult.init(status: CDVCommandStatus_ERROR)
         let parentDirectory = command.arguments[0] as? String 
         let identifiers = command.arguments[0] as? [String]
-        guard let parentDirectory = parentDirectory else {
+        guard let parentDirectoryPath = parentDirectory else {
             print("parent directory is nil for 'createDirectories' operation")
             self.commandDelegate.send(pluginResult, callbackId: command.callbackId)
             return
         }
-        guard let identifiers = identifiers else {
+        guard let identifiersList = identifiers else {
             print("identifiers are nil for 'createDirectories' operation")
             self.commandDelegate.send(pluginResult, callbackId: command.callbackId)
             return
         }
         var results = [String: Any]()
-        for identifier in identifiers {
-            let directoryPath = "file://" + parentDirectory + "/" + identifier 
+        for identifier in identifiersList {
+            let directoryPath = "file://" + parentDirectoryPath + "/" + identifier 
             if !directoryExistsAtPath(directoryPath) {
                 let created = try? FileManager.default.createDirectory(atPath: directoryPath, withIntermediateDirectories: false, attributes: nil)
                 if created != nil {
