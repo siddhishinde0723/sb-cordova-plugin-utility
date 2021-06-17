@@ -3,15 +3,15 @@ import Foundation
 
 
 @objc(UtilityPlugin) class UtilityPlugin : CDVPlugin { 
-
-
+    
+    
     fileprivate func directoryExistsAtPath(_ path: String) -> Bool {
         var isDirectory = ObjCBool(true)
         let exists = FileManager.default.fileExists(atPath: path, isDirectory: &isDirectory)
         return exists && isDirectory.boolValue
     }
-
-
+    
+    
     @objc
     func getBuildConfigValue(_ command: CDVInvokedUrlCommand) {
         var pluginResult: CDVPluginResult = CDVPluginResult.init(status: CDVCommandStatus_ERROR)
@@ -24,7 +24,7 @@ import Foundation
         pluginResult = CDVPluginResult.init(status: CDVCommandStatus_OK, messageAs: appVersion)
         self.commandDelegate.send(pluginResult, callbackId: command.callbackId)
     }
-
+    
     @objc
     func getBuildConfigValues(_ command: CDVInvokedUrlCommand) {
         //TODO: Need to implement build config values implementation¯
@@ -32,7 +32,7 @@ import Foundation
         let pluginResult:CDVPluginResult = CDVPluginResult.init(status: CDVCommandStatus_OK, messageAs: buildConfigValues)
         self.commandDelegate.send(pluginResult, callbackId: command.callbackId)       
     }
-
+    
     @objc
     func rm(_ command: CDVInvokedUrlCommand) {
         var pluginResult: CDVPluginResult = CDVPluginResult.init(status: CDVCommandStatus_ERROR)
@@ -51,37 +51,47 @@ import Foundation
         pluginResult = CDVPluginResult.init(status: CDVCommandStatus_OK)
         self.commandDelegate.send(pluginResult, callbackId: command.callbackId)
     }
-
+    
     @objc
     func openPlayStore(_ command: CDVInvokedUrlCommand) {
-        // TODO: Need to do actual implementation
-        let appId = command.arguments[1] as? String 
-        print("App Id: \(String(describing:appId)), Skipping this implementation for now")
-        let pluginResult:CDVPluginResult = CDVPluginResult.init(status: CDVCommandStatus_OK, messageAs: "App Id: \(String(describing:appId)), Skipping this implementation for now")
+        var pluginResult: CDVPluginResult = CDVPluginResult.init(status: CDVCommandStatus_ERROR)
+        let appId = command.arguments[1] as! String
+        let urlToOpen = "itms-apps://itunes.apple.com/app/" + appId;
+        guard let url = URL(string: urlToOpen) else {
+            self.commandDelegate.send(pluginResult, callbackId: command.callbackId)
+            return
+        }
+        
+        if #available(iOS 10.0, *) {
+            UIApplication.shared.open(url, options: [:], completionHandler: nil)
+        } else {
+            UIApplication.shared.openURL(url)
+        }
+        
+        pluginResult = CDVPluginResult.init(status: CDVCommandStatus_OK)
         self.commandDelegate.send(pluginResult, callbackId: command.callbackId)
     }
-
+    
     @objc
     func getDeviceAPILevel(_ command: CDVInvokedUrlCommand) {
         var systemVersion = UIDevice.current.systemVersion
         let pluginResult:CDVPluginResult = CDVPluginResult.init(status: CDVCommandStatus_OK, messageAs: systemVersion)
         self.commandDelegate.send(pluginResult, callbackId: command.callbackId)
     }
-
+    
     @objc
     func checkAppAvailability(_ command: CDVInvokedUrlCommand) {
-        //TODO: Sending false as default implemenation
         let pluginResult:CDVPluginResult = CDVPluginResult.init(status: CDVCommandStatus_OK, messageAs: "false")
         self.commandDelegate.send(pluginResult, callbackId: command.callbackId)
     }
-
+    
     @objc
     func getDownloadDirectoryPath(_ command: CDVInvokedUrlCommand) {
         let downloadsDirectory = FileManager.default.urls(for: .downloadsDirectory, in: .userDomainMask).first!
         let pluginResult:CDVPluginResult = CDVPluginResult.init(status: CDVCommandStatus_OK, messageAs: downloadsDirectory.path + "/")
         self.commandDelegate.send(pluginResult, callbackId: command.callbackId)
     }
-
+    
     @objc 
     func exportApk(_ command: CDVInvokedUrlCommand) {
         // TODO: Need to do actual implementation
@@ -90,22 +100,27 @@ import Foundation
         let pluginResult:CDVPluginResult = CDVPluginResult.init(status: CDVCommandStatus_OK, messageAs: destination!)
         self.commandDelegate.send(pluginResult, callbackId: command.callbackId)
     }
-
-
+    
+    
     @objc
     func getDeviceSpec(_ command: CDVInvokedUrlCommand) {
-        // TODO: Need to do actual implementation
         var specs = [String: Any]()
-        print("getDeviceSpec: Skipping this implementation for now")
+        let deviceInfo = UIDevice.current;
+        specs["os"] = deviceInfo.systemName + " " + deviceInfo.systemVersion
+        specs["id"] = deviceInfo.identifierForVendor?.uuidString
+        specs["make"] = deviceInfo.model
+        
+        print("TODO need to other keys as well")
+        
         let pluginResult:CDVPluginResult = CDVPluginResult.init(status: CDVCommandStatus_OK, messageAs: specs)
         self.commandDelegate.send(pluginResult, callbackId: command.callbackId)
     }
-
+    
     @objc
     func createDirectories(_ command: CDVInvokedUrlCommand) {
         var pluginResult: CDVPluginResult = CDVPluginResult.init(status: CDVCommandStatus_ERROR)
-        let parentDirectory = command.arguments[0] as? String 
-        let identifiers = command.arguments[0] as? [String]
+        let parentDirectory = command.arguments[1] as? String
+        let identifiers = command.arguments[2] as? [String]
         guard let parentDirectoryPath = parentDirectory else {
             print("parent directory is nil for 'createDirectories' operation")
             self.commandDelegate.send(pluginResult, callbackId: command.callbackId)
@@ -131,76 +146,178 @@ import Foundation
         pluginResult = CDVPluginResult.init(status: CDVCommandStatus_OK, messageAs: results)
         self.commandDelegate.send(pluginResult, callbackId: command.callbackId)
     }
-
+    
     @objc
     func writeFile(_ command: CDVInvokedUrlCommand) {
-
+        
     }
-
+    
     @objc
     func getMetaData(_ command: CDVInvokedUrlCommand) {
-
+        var pluginResult: CDVPluginResult;
+        let inputArray = command.arguments[1] as? [[String: Any]] ?? [];
+        var output: [String: Any] = [:];
+        if inputArray.count > 0 {
+            let fileManager = FileManager.default
+            for config in inputArray {
+                let filePath: String? = config["path"] as? String
+                let identifier: String? = config["identifier"] as? String
+                if filePath != nil && identifier != nil {
+                    do {
+                        let attr : NSDictionary? = try fileManager.attributesOfItem(atPath: filePath!) as NSDictionary
+                        if let _attr = attr {
+                            var attributes: [String: Any] = [:]
+                            attributes["size"] = _attr.fileSize();
+                            attributes["fileModificationDate"] = _attr.fileModificationDate()
+                            output[identifier!] = attributes
+                        }
+                    } catch let error {
+                        print("failed to fetch file attributes at \(String(describing: filePath))")
+                        print("Error: \(error)")
+                    }
+                }
+            }
+        }
+        
+        pluginResult = CDVPluginResult.init(status: CDVCommandStatus_OK, messageAs: output)
+        self.commandDelegate.send(pluginResult, callbackId: command.callbackId)
+        return;
     }
-
+    
     @objc
     func getAvailableInternalMemorySize(_ command: CDVInvokedUrlCommand) {
-
+        
     }
-
-
+    
+    
     @objc
     func getUtmInfo(_ command: CDVInvokedUrlCommand) {
-
+        
     }
-
-
+    
+    
     @objc
     func clearUtmInfo(_ command: CDVInvokedUrlCommand) {
-
+        
     }
-
+    
     @objc
     func getStorageVolumes(_ command: CDVInvokedUrlCommand) {
-
-           
+        
+        
     }
-
+    
     @objc
     func copyDirectory(_ command: CDVInvokedUrlCommand) {
-
-
+        
+        var pluginResult: CDVPluginResult = CDVPluginResult.init(status: CDVCommandStatus_ERROR)
+        let sourceDirectory: String? = command.arguments[1] as? String
+        let destinationDirectory: String? = command.arguments[2] as? String
+        
+        if let sourceDirectory = sourceDirectory, let destinationDirectory = destinationDirectory {
+            
+            if let resourceMainURL = Bundle.main.resourceURL {
+                var isDirectory = ObjCBool(true)
+                let originPath = resourceMainURL.appendingPathComponent(sourceDirectory)
+                let destinationPath = NSSearchPathForDirectoriesInDomains(.cachesDirectory, .userDomainMask, true).first!
+                let destURL = URL(fileURLWithPath: destinationPath).appendingPathComponent(destinationDirectory)
+                let fileManager = FileManager.default
+                if fileManager.fileExists(atPath: destURL.path, isDirectory:&isDirectory ){
+                    print("Directory already exists")
+                    self.commandDelegate.send(pluginResult, callbackId: command.callbackId)
+                    return
+                    
+                }else{
+                    do {
+                        try fileManager.copyItem(at: originPath, to: destURL)
+                        pluginResult = CDVPluginResult.init(status: CDVCommandStatus_OK)
+                        self.commandDelegate.send(pluginResult, callbackId: command.callbackId)
+                        return
+                        
+                    }catch let error{
+                        print(error.localizedDescription)
+                        self.commandDelegate.send(pluginResult, callbackId: command.callbackId)
+                        return
+                    }
+                }
+            }
+        }
+        
+        print("invalid input");
+        self.commandDelegate.send(pluginResult, callbackId: command.callbackId)
+        return
     }
-
+    
     @objc
     func renameDirectory(_ command: CDVInvokedUrlCommand) {
-
+        var pluginResult: CDVPluginResult = CDVPluginResult.init(status: CDVCommandStatus_ERROR)
+        let sourceDirectory: String? = command.arguments[1] as? String
+        let targetDirectoryName: String? = command.arguments[2] as? String
         
+        if let sourceDirectory = sourceDirectory, let targetDirectoryName = targetDirectoryName {
+            
+            // logic to rename directory
+            pluginResult = CDVPluginResult.init(status: CDVCommandStatus_OK)
+            self.commandDelegate.send(pluginResult, callbackId: command.callbackId)
+            return
+        }
+        
+        print("invalid input");
+        self.commandDelegate.send(pluginResult, callbackId: command.callbackId)
+        return;
     }
-
+    
     @objc
     func canWrite(_ command: CDVInvokedUrlCommand) {
-
+        
         
     }
-
+    
     @objc
     func getFreeUsableSpace(_ command: CDVInvokedUrlCommand) {
-
+        
         
     }
-
+    
     @objc
     func readFromAssets(_ command: CDVInvokedUrlCommand) {
-
+        
         
     }
-
+    
     @objc
     func copyFile(_ command: CDVInvokedUrlCommand) {
-
+        var pluginResult: CDVPluginResult = CDVPluginResult.init(status: CDVCommandStatus_ERROR)
+        let sourceDirectoryArg: String? = command.arguments[1] as? String
+        let targetDirectoryArg: String? = command.arguments[2] as? String
+        let fileName: String? = command.arguments[3] as? String
         
+        if let sourceDirectoryArg = sourceDirectoryArg, let targetDirectoryArg = targetDirectoryArg, let fileName = fileName {
+            let fileManager = FileManager.default
+            let sourcePath = URL(fileURLWithPath: sourceDirectoryArg)
+            let targetPath = URL(fileURLWithPath: targetDirectoryArg)
+            let sourceFilePath = sourcePath.appendingPathComponent(fileName).path
+            let destinationFilePath = targetPath.appendingPathComponent(fileName).path
+            if fileManager.fileExists(atPath: sourceFilePath) {
+                print("File exists")
+                do {
+                    try fileManager.copyItem(atPath: sourceFilePath, toPath: destinationFilePath)
+                    
+                    print("Copy successful")
+                    pluginResult = CDVPluginResult.init(status: CDVCommandStatus_OK)
+                    self.commandDelegate.send(pluginResult, callbackId: command.callbackId)
+                    return
+                } catch let error {
+                    print("Error while copying file")
+                    print(error)
+                }
+            }
+        }
+        
+        self.commandDelegate.send(pluginResult, callbackId: command.callbackId)
+        return
     }
-
+    
     @objc
     func getApkSize(_ command: CDVInvokedUrlCommand) {
         // TODO: Need to do actual implementation
@@ -208,28 +325,28 @@ import Foundation
         let pluginResult:CDVPluginResult = CDVPluginResult.init(status: CDVCommandStatus_OK, messageAs: "111")
         self.commandDelegate.send(pluginResult, callbackId: command.callbackId)
     }
-
+    
     @objc
     func verifyCaptcha(_ command: CDVInvokedUrlCommand) {
-
+        
         
     }
-
+    
     @objc
     func startActivityForResult(_ command: CDVInvokedUrlCommand) {
-
+        
         
     }
-
+    
     @objc
     func getAppAvailabilityStatus(_ command: CDVInvokedUrlCommand) {
-
+        
         
     }
-
+    
     @objc
     func openFileManager(_ command: CDVInvokedUrlCommand) {
-
+        
         
     }
 }
