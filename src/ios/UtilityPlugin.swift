@@ -340,8 +340,21 @@ import Foundation
     
     @objc
     func getAppAvailabilityStatus(_ command: CDVInvokedUrlCommand) {
-        
-        
+        var pluginResult: CDVPluginResult
+        let appsList = command.arguments[0] as? [String] ?? []
+        var availableApps: [String: Bool] = [:];
+        for appName in appsList {
+            let appScheme = "\(appName)://app"
+            let appUrl = URL(string: appScheme)
+            if UIApplication.shared.canOpenURL(appUrl! as URL) {
+                availableApps[appName] = true
+            }else{
+                availableApps[appName] = false
+            }
+        }
+        pluginResult = CDVPluginResult.init(status: CDVCommandStatus_OK, messageAs: availableApps)
+        self.commandDelegate.send(pluginResult, callbackId: command.callbackId)
+        return
     }
     
     @objc
