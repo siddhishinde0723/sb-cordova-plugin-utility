@@ -269,8 +269,17 @@ import Foundation
     
     @objc
     func canWrite(_ command: CDVInvokedUrlCommand) {
-        
-        
+        var pluginResult: CDVPluginResult = CDVPluginResult.init(status: CDVCommandStatus_ERROR)
+        let filePath = command.arguments[1] as? String;
+        if let filePath = filePath {
+            let fileManager = FileManager.default
+            let canWrite = fileManager.isWritableFile(atPath: filePath)
+            if canWrite {
+                pluginResult = CDVPluginResult.init(status: CDVCommandStatus_OK)
+            }
+        }
+        self.commandDelegate.send(pluginResult, callbackId: command.callbackId)
+        return
     }
     
     @objc
@@ -341,6 +350,7 @@ import Foundation
     @objc
     func getAppAvailabilityStatus(_ command: CDVInvokedUrlCommand) {
         var pluginResult: CDVPluginResult
+        
         let appsList = command.arguments[0] as? [String] ?? []
         var availableApps: [String: Bool] = [:];
         for appName in appsList {
