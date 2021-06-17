@@ -298,8 +298,25 @@ import Foundation
     
     @objc
     func getFreeUsableSpace(_ command: CDVInvokedUrlCommand) {
-        
-        
+        var freeSize: Double = 0
+        var pluginResult: CDVPluginResult = CDVPluginResult.init(status: CDVCommandStatus_OK, messageAs: freeSize)
+        let directory = command.arguments[1] as? String
+        if let directory = directory {
+            let fileManager = FileManager.default
+            do {
+                let fileAttributes : NSDictionary? = try fileManager.attributesOfFileSystem(forPath: directory) as NSDictionary
+                if let size = fileAttributes?["NSFileSystemFreeSize"] {
+                    freeSize = size as! Double
+                }
+                pluginResult = CDVPluginResult.init(status: CDVCommandStatus_OK, messageAs: freeSize)
+            } catch let error {
+                print(error)
+                self.commandDelegate.send(pluginResult, callbackId: command.callbackId)
+                return
+            }
+        }
+        self.commandDelegate.send(pluginResult, callbackId: command.callbackId)
+        return
     }
     
     @objc
