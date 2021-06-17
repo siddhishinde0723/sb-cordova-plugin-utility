@@ -186,7 +186,21 @@ import Foundation
     
     @objc
     func getAvailableInternalMemorySize(_ command: CDVInvokedUrlCommand) {
-        
+        var pluginResult: CDVPluginResult = CDVPluginResult.init(status: CDVCommandStatus_ERROR)
+        let fileManager = FileManager.default
+        do {
+            let attrs = try fileManager.attributesOfFileSystem(forPath: NSHomeDirectory())
+            guard let freeSize = attrs[.systemFreeSize] as? Double else {
+                self.commandDelegate.send(pluginResult, callbackId: command.callbackId)
+                return
+            }
+            pluginResult = CDVPluginResult.init(status: CDVCommandStatus_OK, messageAs: freeSize)
+            self.commandDelegate.send(pluginResult, callbackId: command.callbackId)
+            return
+        } catch {
+            self.commandDelegate.send(pluginResult, callbackId: command.callbackId)
+            return
+        }
     }
     
     
