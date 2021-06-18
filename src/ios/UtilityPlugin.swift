@@ -2,9 +2,10 @@
 import Foundation
 
 
-@objc(UtilityPlugin) class UtilityPlugin : CDVPlugin { 
+@objc(UtilityPlugin) class UtilityPlugin : CDVPlugin {
     
-    
+    let SHARED_PREFERENCES_NAME = "org.ekstep.genieservices.preference_file";
+
     fileprivate func directoryExistsAtPath(_ path: String) -> Bool {
         var isDirectory = ObjCBool(true)
         let exists = FileManager.default.fileExists(atPath: path, isDirectory: &isDirectory)
@@ -19,7 +20,7 @@ import Foundation
         guard  appVersion != "" else {
             print("appVersion is nil")
             self.commandDelegate.send(pluginResult, callbackId: command.callbackId)
-            return           
+            return
         }
         pluginResult = CDVPluginResult.init(status: CDVCommandStatus_OK, messageAs: appVersion)
         self.commandDelegate.send(pluginResult, callbackId: command.callbackId)
@@ -30,13 +31,13 @@ import Foundation
         //TODO: Need to implement build config values implementation¯
         let buildConfigValues = "{\"DISPLAY_SIGNIN_FOOTER_CARD_IN_PROFILE_TAB_FOR_TEACHER\":true,\"TOU_BASE_URL\":\"https://static.preprod.ntp.net.in\",\"APPLICATION_ID\":\"staging.diksha.app\",\"MERGE_ACCOUNT_BASE_URL\":\"https://merge.staging.sunbirded.org\",\"OAUTH_REDIRECT_URL\":\"staging.diksha.app://mobile\",\"TRACK_USER_TELEMETRY\":true,\"PRODUCER_ID\":\"staging.diksha.app\",\"DISPLAY_SIGNIN_FOOTER_CARD_IN_COURSE_TAB_FOR_TEACHER\":true,\"OAUTH_SESSION\":\"org.genie.KeycloakOAuthSessionService\",\"SUPPORT_EMAIL\":\"support@teamdiksha.org\",\"DISPLAY_FRAMEWORK_CATEGORIES_IN_PROFILE\":true,\"REAL_VERSION_NAME\":\"3.6.local.0-debug\",\"MOBILE_APP_CONSUMER\":\"mobile_device\",\"DISPLAY_SIGNIN_FOOTER_CARD_IN_PROFILE_TAB_FOR_STUDENT\":false,\"MOBILE_APP_SECRET\":\"c0MsZyjLdKYMz255KKRvP0TxVbkeNFlx\",\"CONTENT_STREAMING_ENABLED\":true,\"FLAVOR\":\"staging\",\"USE_CRASHLYTICS\":false,\"CHANNEL_ID\":\"505c7c48ac6dc1edc9b08f21db5a571d\",\"DISPLAY_ONBOARDING_CATEGORY_PAGE\":true,\"MOBILE_APP_KEY\":\"sunbird-0.1\",\"BUILD_TYPE\":\"debug\",\"DISPLAY_SIGNIN_FOOTER_CARD_IN_LIBRARY_TAB_FOR_STUDENT\":false,\"MAX_COMPATIBILITY_LEVEL\":4,\"VERSION_CODE\":90,\"DEBUG\":true,\"OPEN_RAPDISCOVERY_ENABLED\":true,\"VERSION_NAME\":\"3.6.local\",\"BASE_URL\":\"https://staging.sunbirded.org\",\"DISPLAY_SIGNIN_FOOTER_CARD_IN_LIBRARY_TAB_FOR_TEACHER\":true}"
         let pluginResult:CDVPluginResult = CDVPluginResult.init(status: CDVCommandStatus_OK, messageAs: buildConfigValues)
-        self.commandDelegate.send(pluginResult, callbackId: command.callbackId)       
+        self.commandDelegate.send(pluginResult, callbackId: command.callbackId)
     }
     
     @objc
     func rm(_ command: CDVInvokedUrlCommand) {
         var pluginResult: CDVPluginResult = CDVPluginResult.init(status: CDVCommandStatus_ERROR)
-        let deletingDirectory = command.arguments[0] as? String 
+        let deletingDirectory = command.arguments[0] as? String
         guard let deletingDirectoryPath = deletingDirectory else {
             print("Delete directory is nil for 'rm' operation")
             self.commandDelegate.send(pluginResult, callbackId: command.callbackId)
@@ -92,10 +93,10 @@ import Foundation
         self.commandDelegate.send(pluginResult, callbackId: command.callbackId)
     }
     
-    @objc 
+    @objc
     func exportApk(_ command: CDVInvokedUrlCommand) {
         // TODO: Need to do actual implementation
-        let destination = command.arguments[1] as? String 
+        let destination = command.arguments[1] as? String
         print("export apk : \(destination), Skipping this implementation for now")
         let pluginResult:CDVPluginResult = CDVPluginResult.init(status: CDVCommandStatus_OK, messageAs: destination!)
         self.commandDelegate.send(pluginResult, callbackId: command.callbackId)
@@ -133,7 +134,7 @@ import Foundation
         }
         var results = [String: Any]()
         for identifier in identifiersList {
-            let directoryPath = "file://" + parentDirectoryPath + "/" + identifier 
+            let directoryPath = "file://" + parentDirectoryPath + "/" + identifier
             if !directoryExistsAtPath(directoryPath) {
                 let created = try? FileManager.default.createDirectory(atPath: directoryPath, withIntermediateDirectories: false, attributes: nil)
                 if created != nil {
@@ -149,7 +150,24 @@ import Foundation
     
     @objc
     func writeFile(_ command: CDVInvokedUrlCommand) {
-        
+        let pluginResult: CDVPluginResult = CDVPluginResult.init(status: CDVCommandStatus_OK)
+        let inputConfig = command.arguments[1] as? [[String: Any]] ?? [[:]]
+        if inputConfig.count > 0 {
+            for file in inputConfig {
+                var path: String = file["path"] as! String
+                path = path.replacingOccurrences(of: "file://", with: "")
+                let fileName: String = file["fileName"] as! String
+                let data = file["data"] as! String
+                let filePath = URL(fileURLWithPath: path+fileName)
+                do {
+                    try data.write(to: filePath, atomically: true, encoding: .utf8)
+                } catch let error {
+                    print("sbUtility:writeFile :: Failed to write to File", path + fileName)
+                    print(error)
+                }
+            }
+        }
+        self.commandDelegate.send(pluginResult, callbackId: command.callbackId)
     }
     
     @objc
@@ -321,8 +339,23 @@ import Foundation
     
     @objc
     func readFromAssets(_ command: CDVInvokedUrlCommand) {
-        
-        
+        var pluginResult: CDVPluginResult = CDVPluginResult.init(status: CDVCommandStatus_ERROR)
+        let fileName = command.arguments[1] as? String ?? nil
+        if var fileName = fileName {
+            do {
+                fileName = fileName.replacingOccurrences(of: "file://", with: "")
+                let path=URL(fileURLWithPath: fileName)
+                let fileContents=try String(contentsOf: path)
+                pluginResult = CDVPluginResult.init(status: CDVCommandStatus_OK, messageAs: fileContents)
+              } catch let error{
+                print("Read from assets folder failed \(fileName)")
+                print(error)
+                self.commandDelegate.send(pluginResult, callbackId: command.callbackId)
+                return
+              }
+        }
+        self.commandDelegate.send(pluginResult, callbackId: command.callbackId)
+        return
     }
     
     @objc
@@ -350,10 +383,11 @@ import Foundation
                 } catch let error {
                     print("Error while copying file")
                     print(error)
+                    self.commandDelegate.send(pluginResult, callbackId: command.callbackId)
+                    return
                 }
             }
         }
-        
         self.commandDelegate.send(pluginResult, callbackId: command.callbackId)
         return
     }
@@ -404,3 +438,4 @@ import Foundation
         
     }
 }
+
