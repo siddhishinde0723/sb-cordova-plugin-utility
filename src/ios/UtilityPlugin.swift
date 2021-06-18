@@ -5,7 +5,7 @@ import Foundation
 @objc(UtilityPlugin) class UtilityPlugin : CDVPlugin {
     
     let SHARED_PREFERENCES_NAME = "org.ekstep.genieservices.preference_file";
-
+    
     fileprivate func directoryExistsAtPath(_ path: String) -> Bool {
         var isDirectory = ObjCBool(true)
         let exists = FileManager.default.fileExists(atPath: path, isDirectory: &isDirectory)
@@ -241,13 +241,10 @@ import Foundation
     
     @objc
     func copyDirectory(_ command: CDVInvokedUrlCommand) {
-        
         var pluginResult: CDVPluginResult = CDVPluginResult.init(status: CDVCommandStatus_ERROR)
         let sourceDirectory: String? = command.arguments[1] as? String
         let destinationDirectory: String? = command.arguments[2] as? String
-        
         if let sourceDirectory = sourceDirectory, let destinationDirectory = destinationDirectory {
-            
             if let resourceMainURL = Bundle.main.resourceURL {
                 var isDirectory = ObjCBool(true)
                 let originPath = resourceMainURL.appendingPathComponent(sourceDirectory)
@@ -258,7 +255,6 @@ import Foundation
                     print("Directory already exists")
                     self.commandDelegate.send(pluginResult, callbackId: command.callbackId)
                     return
-                    
                 }else{
                     do {
                         try fileManager.copyItem(at: originPath, to: destURL)
@@ -347,12 +343,12 @@ import Foundation
                 let path=URL(fileURLWithPath: fileName)
                 let fileContents=try String(contentsOf: path)
                 pluginResult = CDVPluginResult.init(status: CDVCommandStatus_OK, messageAs: fileContents)
-              } catch let error{
+            } catch let error{
                 print("Read from assets folder failed \(fileName)")
                 print(error)
                 self.commandDelegate.send(pluginResult, callbackId: command.callbackId)
                 return
-              }
+            }
         }
         self.commandDelegate.send(pluginResult, callbackId: command.callbackId)
         return
@@ -438,4 +434,5 @@ import Foundation
         
     }
 }
+
 
