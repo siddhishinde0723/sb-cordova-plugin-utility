@@ -12,6 +12,15 @@ import Foundation
         return exists && isDirectory.boolValue
     }
     
+    fileprivate func isAppAvailable(_ packageName: String) -> Bool{
+        let appScheme = "\(packageName)://app"
+        let appUrl = URL(string: appScheme)
+        if UIApplication.shared.canOpenURL(appUrl! as URL){
+            return true
+        }
+        return false
+    }
+    
     
     @objc
     func getBuildConfigValue(_ command: CDVInvokedUrlCommand) {
@@ -82,7 +91,12 @@ import Foundation
     
     @objc
     func checkAppAvailability(_ command: CDVInvokedUrlCommand) {
-        let pluginResult:CDVPluginResult = CDVPluginResult.init(status: CDVCommandStatus_OK, messageAs: "false")
+        var isPackageAvailable = false
+        let packageName = command.arguments[1] as? String
+        if let packageName = packageName {
+            isPackageAvailable = isAppAvailable(packageName)
+        }
+        let pluginResult:CDVPluginResult = CDVPluginResult.init(status: CDVCommandStatus_OK, messageAs: isPackageAvailable)
         self.commandDelegate.send(pluginResult, callbackId: command.callbackId)
     }
     
@@ -427,13 +441,7 @@ import Foundation
         let appsList = command.arguments[0] as? [String] ?? []
         var availableApps: [String: Bool] = [:];
         for appName in appsList {
-            let appScheme = "\(appName)://app"
-            let appUrl = URL(string: appScheme)
-            if UIApplication.shared.canOpenURL(appUrl! as URL) {
-                availableApps[appName] = true
-            }else{
-                availableApps[appName] = false
-            }
+            availableApps[appName] = isAppAvailable(appName)
         }
         pluginResult = CDVPluginResult.init(status: CDVCommandStatus_OK, messageAs: availableApps)
         self.commandDelegate.send(pluginResult, callbackId: command.callbackId)
