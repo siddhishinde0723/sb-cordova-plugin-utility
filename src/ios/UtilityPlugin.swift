@@ -21,6 +21,21 @@ import Foundation
         return false
     }
     
+    fileprivate func getScreenSizeInInches() -> String{
+        let scale = UIScreen.main.scale
+        let ppi = scale * ((UIDevice.current.userInterfaceIdiom == .pad) ? 132 : 163);
+        let width = UIScreen.main.bounds.size.width * scale
+        let height = UIScreen.main.bounds.size.height * scale
+        let horizontal = width / ppi, vertical = height / ppi;
+        let diagonal = sqrt(pow(horizontal, 2) + pow(vertical, 2))
+        return String(format: "%0.1f", diagonal)
+    }
+    
+    var totalDiskSpaceInBytes:Int64 {
+        guard let systemAttributes = try? FileManager.default.attributesOfFileSystem(forPath: NSHomeDirectory() as String),
+            let space = (systemAttributes[FileAttributeKey.systemSize] as? NSNumber)?.int64Value else { return 0 }
+        return space
+    }
     
     @objc
     func getBuildConfigValue(_ command: CDVInvokedUrlCommand) {
@@ -120,13 +135,18 @@ import Foundation
     @objc
     func getDeviceSpec(_ command: CDVInvokedUrlCommand) {
         var specs = [String: Any]()
+        let sizeInGB = ByteCountFormatter.string(fromByteCount: totalDiskSpaceInBytes, countStyle: ByteCountFormatter.CountStyle.decimal)
         let deviceInfo = UIDevice.current;
         specs["os"] = deviceInfo.systemName + " " + deviceInfo.systemVersion
         specs["id"] = deviceInfo.identifierForVendor?.uuidString
         specs["make"] = deviceInfo.model
-        
-        print("TODO need to other keys as well")
-        
+        specs["camera"] = ""
+        specs["scrn"] = getScreenSizeInInches()
+        specs["cpu"] = ""
+        specs["webview"] = ""
+        specs["sims"] = -1
+        specs["edisk"] = sizeInGB
+        specs["idisk"] = sizeInGB
         let pluginResult:CDVPluginResult = CDVPluginResult.init(status: CDVCommandStatus_OK, messageAs: specs)
         self.commandDelegate.send(pluginResult, callbackId: command.callbackId)
     }
