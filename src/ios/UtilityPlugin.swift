@@ -135,7 +135,7 @@ import Foundation
         var results = [String: Any]()
         for identifier in identifiersList {
             let directoryPath = "file://" + parentDirectoryPath + "/" + identifier
-            if !directoryExistsAtPath(directoryPath) {
+            if !directoryExistsAtPath(directoryPath) { 
                 let created = try? FileManager.default.createDirectory(atPath: directoryPath, withIntermediateDirectories: false, attributes: nil)
                 if created != nil {
                     results[identifier] = ["path": directoryPath]
@@ -390,9 +390,21 @@ import Foundation
     
     @objc
     func getApkSize(_ command: CDVInvokedUrlCommand) {
-        // TODO: Need to do actual implementation
-        print("getApkSize:  Skipping this implementation for now")
-        let pluginResult:CDVPluginResult = CDVPluginResult.init(status: CDVCommandStatus_OK, messageAs: "111")
+        var pluginResult: CDVPluginResult
+        let bundlePath = Bundle.main.bundlePath
+        let bundleArray  = FileManager.default.subpaths(atPath: bundlePath)
+        var fileSize : UInt64 = 0
+        for file in bundleArray! {
+            do {
+                let attr = try FileManager.default.attributesOfItem(atPath: bundlePath + "/" + file )
+                let xfileSize = attr[FileAttributeKey.size] as? UInt64 ?? 0
+                fileSize =  fileSize + xfileSize
+            } catch {
+                fileSize = fileSize + 0;
+            }
+        }
+        let folderSize = ByteCountFormatter.string(fromByteCount: Int64(fileSize), countStyle: .memory)
+        pluginResult = CDVPluginResult.init(status: CDVCommandStatus_OK, messageAs: folderSize)
         self.commandDelegate.send(pluginResult, callbackId: command.callbackId)
     }
     
