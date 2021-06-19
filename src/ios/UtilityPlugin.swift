@@ -392,9 +392,9 @@ import Foundation
     func getApkSize(_ command: CDVInvokedUrlCommand) {
         var pluginResult: CDVPluginResult
         let bundlePath = Bundle.main.bundlePath
-        let bundleArray  = FileManager.default.subpaths(atPath: bundlePath)
+        let bundleSubPathsArray  = FileManager.default.subpaths(atPath: bundlePath)
         var fileSize : UInt64 = 0
-        for file in bundleArray! {
+        for file in bundleSubPathsArray! {
             do {
                 let attr = try FileManager.default.attributesOfItem(atPath: bundlePath + "/" + file )
                 let xfileSize = attr[FileAttributeKey.size] as? UInt64 ?? 0
