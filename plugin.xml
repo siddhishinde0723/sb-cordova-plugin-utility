@@ -13,11 +13,14 @@
     
     <!-- android -->
     <platform name="android">
-
+      <framework src="com.google.android.play:core:1.6.1" />
       <config-file target="res/xml/config.xml" parent="/*">
         <feature name="sbutility">
           <param name="android-package" value="org.sunbird.config.UtilityPlugin" />
           <param name="onload" value="true" />
+        </feature>
+        <feature name="InAppUpdateManager">
+            <param name="android-package" value="org.sunbird.appupdate.InAppUpdateManager" />
         </feature>
       </config-file>
 
@@ -34,6 +37,7 @@
       <source-file src="src/android/org/sunbird/support/Base64Util.java" target-dir="src/org/sunbird/support" />
       <source-file src="src/android/org/sunbird/support/JWTokenType.java" target-dir="src/org/sunbird/support" />
       <source-file src="src/android/org/sunbird/support/SunbirdFileHandler.java" target-dir="src/org/sunbird/support" />
+      <source-file src="src/android/org/sunbird/appupdate/InAppUpdateManager.java" target-dir="src/org/sunbird/appupdate" />
 
     </platform>
 

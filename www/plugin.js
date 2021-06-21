@@ -98,6 +98,12 @@ var sbutility = {
     },
     removeFile: function (success, error) {
       exec(success, error, PLUGIN_NAME, PLUGIN_NAME, ["removeFile"]);
+    },
+    checkForImmediateUpdate: function( success, error ) {
+        exec(success, error, "InAppUpdateManager", "immediate");
+    },
+    isUpdateAvailable: function( success, error) {
+        exec(success, error, "InAppUpdateManager", "isUpdateAvailable");
     }
 };
 
