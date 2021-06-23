@@ -3,6 +3,7 @@ package org.sunbird.config;
 import android.content.ActivityNotFoundException;
 import android.content.Context;
 import android.content.Intent;
+import android.content.IntentSender;
 import android.content.SharedPreferences;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageInfo;
@@ -11,6 +12,8 @@ import android.net.Uri;
 import android.os.Build;
 import android.os.Environment;
 import android.text.TextUtils;
+import android.util.Log;
+
 import androidx.annotation.NonNull;
 
 import com.google.android.gms.common.api.ApiException;
@@ -19,6 +22,10 @@ import com.google.android.gms.safetynet.SafetyNet;
 import com.google.android.gms.safetynet.SafetyNetApi;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.android.play.core.appupdate.AppUpdateManager;
+import com.google.android.play.core.appupdate.AppUpdateManagerFactory;
+import com.google.android.play.core.install.model.AppUpdateType;
+import com.google.android.play.core.install.model.UpdateAvailability;
 
 import org.apache.cordova.CallbackContext;
 import org.apache.cordova.CordovaInterface;
@@ -27,6 +34,7 @@ import org.apache.cordova.PluginResult;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
+import org.sunbird.appupdate.InAppUpdateManager;
 import org.sunbird.storage.StorageUtil;
 import org.sunbird.support.SunbirdFileHandler;
 import org.sunbird.utm.InstallReferrerListener;
@@ -51,6 +59,7 @@ public class UtilityPlugin extends CordovaPlugin {
     private static final String SHARED_PREFERENCES_NAME = "org.ekstep.genieservices.preference_file";
     private CallbackContext onActivityResultCallbackContext = null;
     private CallbackContext callbackContext;
+    public AppUpdateManager appUpdateManager;
 
 
     @Override
@@ -173,9 +182,45 @@ public class UtilityPlugin extends CordovaPlugin {
             final String appFlavor = BuildConfigUtil.getBuildConfigValue("org.sunbird.app", "FLAVOR");
             String appName = cordova.getActivity().getString(UtilityPlugin.getIdOfResource(cordova, "_app_name", "string"));
             SunbirdFileHandler.removeFile(cordova.getActivity(), appName, appFlavor);
+        }else if (action.equals("immediate")) {
+            Context context = cordova.getActivity().getApplicationContext();
+            InAppUpdateManager.startUpdateCheck(appUpdateManager, cordova.getActivity());
+            return true;
+        }else if (action.equals("isUpdateAvailable")) {
+            Context context = cordova.getActivity().getApplicationContext();
+            InAppUpdateManager.isUpdateAvailable(appUpdateManager, callbackContext);
+            return true;
         }
-
         return false;
+    }
+
+    @Override
+    public void onResume(boolean multitaskin) {
+        super.onResume(multitaskin);
+        Log.d("InAppUpdateManager", "OnResume called InAppUpdateManager");
+        if (appUpdateManager == null) {
+            Context context = cordova.getActivity().getApplicationContext();
+            appUpdateManager = AppUpdateManagerFactory.create(context);
+        }
+        appUpdateManager
+                .getAppUpdateInfo()
+                .addOnSuccessListener(
+                        appUpdateInfo -> {
+                            if (appUpdateInfo.updateAvailability()
+                                    == UpdateAvailability.DEVELOPER_TRIGGERED_UPDATE_IN_PROGRESS) {
+                                // If an in-app update is already running, resume the update.
+                                try {
+                                    appUpdateManager.startUpdateFlowForResult(
+                                            appUpdateInfo,
+                                            AppUpdateType.IMMEDIATE,
+                                            cordova.getActivity(),
+                                            InAppUpdateManager.REQUEST_CODE);
+                                } catch (IntentSender.SendIntentException e) {
+                                    e.printStackTrace();
+                                }
+                            }
+                        }
+                );
     }
 
     /**

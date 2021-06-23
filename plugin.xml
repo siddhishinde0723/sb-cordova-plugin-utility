@@ -19,9 +19,6 @@
           <param name="android-package" value="org.sunbird.config.UtilityPlugin" />
           <param name="onload" value="true" />
         </feature>
-        <feature name="InAppUpdateManager">
-            <param name="android-package" value="org.sunbird.appupdate.InAppUpdateManager" />
-        </feature>
       </config-file>
 
       <source-file src="src/android/org/sunbird/config/UtilityPlugin.java" target-dir="src/org/sunbird/config" />

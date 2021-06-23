@@ -100,10 +100,10 @@ var sbutility = {
       exec(success, error, PLUGIN_NAME, PLUGIN_NAME, ["removeFile"]);
     },
     checkForImmediateUpdate: function( success, error ) {
-        exec(success, error, "InAppUpdateManager", "immediate");
+        exec(success, error, PLUGIN_NAME, "immediate");
     },
     isUpdateAvailable: function( success, error) {
-        exec(success, error, "InAppUpdateManager", "isUpdateAvailable");
+        exec(success, error, PLUGIN_NAME, "isUpdateAvailable");
     }
 };
 
