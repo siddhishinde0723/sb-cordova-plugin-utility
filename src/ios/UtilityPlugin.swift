@@ -12,26 +12,46 @@ import Foundation
         return exists && isDirectory.boolValue
     }
     
-    fileprivate func getFreeDiskSpaceInBytes() -> Int {
-            if #available(iOS 11.0, *) {
-                if let space = try? URL(fileURLWithPath: NSHomeDirectory() as String).resourceValues(forKeys: [URLResourceKey.volumeAvailableCapacityForImportantUsageKey]).volumeAvailableCapacityForImportantUsage {
-                    return Int(truncatingIfNeeded: space) ?? 0
-                } else {
-                    return 0
-                }
-            } else {
-                if let systemAttributes = try? FileManager.default.attributesOfFileSystem(forPath: NSHomeDirectory() as String),
-                let freeSpace = (systemAttributes[FileAttributeKey.systemFreeSize] as? NSNumber)?.int64Value {
-                    return Int(truncatingIfNeeded: freeSpace)
-                } else {
-                    return 0
-                }
-            }
+    fileprivate func isAppAvailable(_ packageName: String) -> Bool{
+        let appScheme = "\(packageName)://app"
+        let appUrl = URL(string: appScheme)
+        if UIApplication.shared.canOpenURL(appUrl! as URL){
+            return true
+        }
+        return false
     }
-
+    
+    fileprivate func getScreenSizeInInches() -> String{
+        let scale = UIScreen.main.scale
+        let ppi = scale * ((UIDevice.current.userInterfaceIdiom == .pad) ? 132 : 163);
+        let width = UIScreen.main.bounds.size.width * scale
+        let height = UIScreen.main.bounds.size.height * scale
+        let horizontal = width / ppi, vertical = height / ppi;
+        let diagonal = sqrt(pow(horizontal, 2) + pow(vertical, 2))
+        return String(format: "%0.1f", diagonal)
+    }
+    
+    
+    fileprivate func getFreeDiskSpaceInBytes() -> Int {
+        if #available(iOS 11.0, *) {
+            if let space = try? URL(fileURLWithPath: NSHomeDirectory() as String).resourceValues(forKeys: [URLResourceKey.volumeAvailableCapacityForImportantUsageKey]).volumeAvailableCapacityForImportantUsage {
+                return Int(truncatingIfNeeded: space) ?? 0
+            } else {
+                return 0
+            }
+        } else {
+            if let systemAttributes = try? FileManager.default.attributesOfFileSystem(forPath: NSHomeDirectory() as String),
+               let freeSpace = (systemAttributes[FileAttributeKey.systemFreeSize] as? NSNumber)?.int64Value {
+                return Int(truncatingIfNeeded: freeSpace)
+            } else {
+                return 0
+            }
+        }
+    }
+    
     fileprivate func getTotalDiskSpaceInBytes() -> Int64 {
         guard let systemAttributes = try? FileManager.default.attributesOfFileSystem(forPath: NSHomeDirectory() as String),
-            let space = (systemAttributes[FileAttributeKey.systemSize] as? NSNumber)?.int64Value else { return 0 }
+              let space = (systemAttributes[FileAttributeKey.systemSize] as? NSNumber)?.int64Value else { return 0 }
         return  space
     }
     
@@ -105,7 +125,12 @@ import Foundation
     
     @objc
     func checkAppAvailability(_ command: CDVInvokedUrlCommand) {
-        let pluginResult:CDVPluginResult = CDVPluginResult.init(status: CDVCommandStatus_OK, messageAs: "false")
+        var isPackageAvailable = false
+        let packageName = command.arguments[1] as? String
+        if let packageName = packageName {
+            isPackageAvailable = isAppAvailable(packageName)
+        }
+        let pluginResult:CDVPluginResult = CDVPluginResult.init(status: CDVCommandStatus_OK, messageAs: isPackageAvailable)
         self.commandDelegate.send(pluginResult, callbackId: command.callbackId)
     }
     
@@ -129,13 +154,19 @@ import Foundation
     @objc
     func getDeviceSpec(_ command: CDVInvokedUrlCommand) {
         var specs = [String: Any]()
+        let total = getTotalDiskSpaceInBytes()
+        let sizeInGB = ByteCountFormatter.string(fromByteCount: total, countStyle: ByteCountFormatter.CountStyle.decimal)
         let deviceInfo = UIDevice.current;
         specs["os"] = deviceInfo.systemName + " " + deviceInfo.systemVersion
         specs["id"] = deviceInfo.identifierForVendor?.uuidString
         specs["make"] = deviceInfo.model
-        
-        print("TODO need to other keys as well")
-        
+        specs["camera"] = ""
+        specs["scrn"] = getScreenSizeInInches()
+        specs["cpu"] = ""
+        specs["webview"] = ""
+        specs["sims"] = -1
+        specs["edisk"] = sizeInGB
+        specs["idisk"] = sizeInGB
         let pluginResult:CDVPluginResult = CDVPluginResult.init(status: CDVCommandStatus_OK, messageAs: specs)
         self.commandDelegate.send(pluginResult, callbackId: command.callbackId)
     }
@@ -247,13 +278,17 @@ import Foundation
     
     @objc
     func getUtmInfo(_ command: CDVInvokedUrlCommand) {
-        
+        // TODO skipping implementation for now
+        let pluginResult: CDVPluginResult = CDVPluginResult.init(status: CDVCommandStatus_OK)
+        self.commandDelegate.send(pluginResult, callbackId: command.callbackId)
     }
     
     
     @objc
     func clearUtmInfo(_ command: CDVInvokedUrlCommand) {
-        
+        // TODO skipping implementation for now
+        let pluginResult: CDVPluginResult = CDVPluginResult.init(status: CDVCommandStatus_OK)
+        self.commandDelegate.send(pluginResult, callbackId: command.callbackId)
     }
     
     @objc
@@ -346,22 +381,13 @@ import Foundation
     
     @objc
     func getFreeUsableSpace(_ command: CDVInvokedUrlCommand) {
-        var freeSize: Double = 0
+        var freeSize = 0
         var pluginResult: CDVPluginResult = CDVPluginResult.init(status: CDVCommandStatus_OK, messageAs: freeSize)
         let directory = command.arguments[1] as? String
-        if let directory = directory {
-            let fileManager = FileManager.default
-            do {
-                let fileAttributes : NSDictionary? = try fileManager.attributesOfFileSystem(forPath: directory) as NSDictionary
-                if let size = fileAttributes?["NSFileSystemFreeSize"] {
-                    freeSize = size as! Double
-                }
-                pluginResult = CDVPluginResult.init(status: CDVCommandStatus_OK, messageAs: freeSize)
-            } catch let error {
-                print(error)
-                self.commandDelegate.send(pluginResult, callbackId: command.callbackId)
-                return
-            }
+        if let _ = directory {
+            let free = getFreeDiskSpaceInBytes()
+            freeSize = Int(free)
+            pluginResult = CDVPluginResult.init(status: CDVCommandStatus_OK, messageAs: freeSize)
         }
         self.commandDelegate.send(pluginResult, callbackId: command.callbackId)
         return
@@ -424,22 +450,36 @@ import Foundation
     
     @objc
     func getApkSize(_ command: CDVInvokedUrlCommand) {
-        // TODO: Need to do actual implementation
-        print("getApkSize:  Skipping this implementation for now")
-        let pluginResult:CDVPluginResult = CDVPluginResult.init(status: CDVCommandStatus_OK, messageAs: "111")
+        var pluginResult: CDVPluginResult
+        let bundlePath = Bundle.main.bundlePath
+        let bundleSubPathsArray  = FileManager.default.subpaths(atPath: bundlePath)
+        var fileSize : UInt64 = 0
+        for file in bundleSubPathsArray! {
+            do {
+                let attr = try FileManager.default.attributesOfItem(atPath: bundlePath + "/" + file )
+                let xfileSize = attr[FileAttributeKey.size] as? UInt64 ?? 0
+                fileSize =  fileSize + xfileSize
+            } catch {
+                fileSize = fileSize + 0;
+            }
+        }
+        let folderSize = ByteCountFormatter.string(fromByteCount: Int64(fileSize), countStyle: .memory)
+        pluginResult = CDVPluginResult.init(status: CDVCommandStatus_OK, messageAs: folderSize)
         self.commandDelegate.send(pluginResult, callbackId: command.callbackId)
     }
     
     @objc
     func verifyCaptcha(_ command: CDVInvokedUrlCommand) {
-        
-        
+        // TODO skipping implementation for now
+        let pluginResult: CDVPluginResult = CDVPluginResult.init(status: CDVCommandStatus_OK)
+        self.commandDelegate.send(pluginResult, callbackId: command.callbackId)
     }
     
     @objc
     func startActivityForResult(_ command: CDVInvokedUrlCommand) {
-        
-        
+        // TODO skipping implementation for now
+        let pluginResult: CDVPluginResult = CDVPluginResult.init(status: CDVCommandStatus_OK)
+        self.commandDelegate.send(pluginResult, callbackId: command.callbackId)
     }
     
     @objc
@@ -449,13 +489,7 @@ import Foundation
         let appsList = command.arguments[0] as? [String] ?? []
         var availableApps: [String: Bool] = [:];
         for appName in appsList {
-            let appScheme = "\(appName)://app"
-            let appUrl = URL(string: appScheme)
-            if UIApplication.shared.canOpenURL(appUrl! as URL) {
-                availableApps[appName] = true
-            }else{
-                availableApps[appName] = false
-            }
+            availableApps[appName] = isAppAvailable(appName)
         }
         pluginResult = CDVPluginResult.init(status: CDVCommandStatus_OK, messageAs: availableApps)
         self.commandDelegate.send(pluginResult, callbackId: command.callbackId)
@@ -464,7 +498,9 @@ import Foundation
     
     @objc
     func openFileManager(_ command: CDVInvokedUrlCommand) {
-        
-        
+        // TODO skipping implementation for now
+        let pluginResult: CDVPluginResult = CDVPluginResult.init(status: CDVCommandStatus_OK)
+        self.commandDelegate.send(pluginResult, callbackId: command.callbackId)
     }
 }
+
