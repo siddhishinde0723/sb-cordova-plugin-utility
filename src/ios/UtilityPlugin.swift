@@ -37,6 +37,12 @@ import Foundation
         return space
     }
     
+    var availableDiskSpaceInBytes:Int64 {
+        guard let systemAttributes = try? FileManager.default.attributesOfFileSystem(forPath: NSHomeDirectory() as String),
+              let space = (systemAttributes[FileAttributeKey.systemFreeSize] as? NSNumber)?.int64Value else { return 0 }
+        return space
+    }
+    
     @objc
     func getBuildConfigValue(_ command: CDVInvokedUrlCommand) {
         var pluginResult: CDVPluginResult = CDVPluginResult.init(status: CDVCommandStatus_ERROR)
@@ -258,19 +264,24 @@ import Foundation
     
     @objc
     func getUtmInfo(_ command: CDVInvokedUrlCommand) {
-        
+        // TODO skipping implementation for now
+        let pluginResult: CDVPluginResult = CDVPluginResult.init(status: CDVCommandStatus_OK)
+        self.commandDelegate.send(pluginResult, callbackId: command.callbackId)
     }
     
     
     @objc
     func clearUtmInfo(_ command: CDVInvokedUrlCommand) {
-        
+        // TODO skipping implementation for now
+        let pluginResult: CDVPluginResult = CDVPluginResult.init(status: CDVCommandStatus_OK)
+        self.commandDelegate.send(pluginResult, callbackId: command.callbackId)
     }
     
     @objc
     func getStorageVolumes(_ command: CDVInvokedUrlCommand) {
-        
-        
+        // TODO skipping implementation for now
+        let pluginResult: CDVPluginResult = CDVPluginResult.init(status: CDVCommandStatus_OK)
+        self.commandDelegate.send(pluginResult, callbackId: command.callbackId)
     }
     
     @objc
@@ -346,22 +357,12 @@ import Foundation
     
     @objc
     func getFreeUsableSpace(_ command: CDVInvokedUrlCommand) {
-        var freeSize: Double = 0
+        var freeSize = 0
         var pluginResult: CDVPluginResult = CDVPluginResult.init(status: CDVCommandStatus_OK, messageAs: freeSize)
         let directory = command.arguments[1] as? String
-        if let directory = directory {
-            let fileManager = FileManager.default
-            do {
-                let fileAttributes : NSDictionary? = try fileManager.attributesOfFileSystem(forPath: directory) as NSDictionary
-                if let size = fileAttributes?["NSFileSystemFreeSize"] {
-                    freeSize = size as! Double
-                }
-                pluginResult = CDVPluginResult.init(status: CDVCommandStatus_OK, messageAs: freeSize)
-            } catch let error {
-                print(error)
-                self.commandDelegate.send(pluginResult, callbackId: command.callbackId)
-                return
-            }
+        if let _ = directory {
+            freeSize = Int(availableDiskSpaceInBytes)
+            pluginResult = CDVPluginResult.init(status: CDVCommandStatus_OK, messageAs: freeSize)
         }
         self.commandDelegate.send(pluginResult, callbackId: command.callbackId)
         return
@@ -444,14 +445,16 @@ import Foundation
     
     @objc
     func verifyCaptcha(_ command: CDVInvokedUrlCommand) {
-        
-        
+        // TODO skipping implementation for now
+        let pluginResult: CDVPluginResult = CDVPluginResult.init(status: CDVCommandStatus_OK)
+        self.commandDelegate.send(pluginResult, callbackId: command.callbackId)
     }
     
     @objc
     func startActivityForResult(_ command: CDVInvokedUrlCommand) {
-        
-        
+        // TODO skipping implementation for now
+        let pluginResult: CDVPluginResult = CDVPluginResult.init(status: CDVCommandStatus_OK)
+        self.commandDelegate.send(pluginResult, callbackId: command.callbackId)
     }
     
     @objc
@@ -470,8 +473,9 @@ import Foundation
     
     @objc
     func openFileManager(_ command: CDVInvokedUrlCommand) {
-        
-        
+        // TODO skipping implementation for now
+        let pluginResult: CDVPluginResult = CDVPluginResult.init(status: CDVCommandStatus_OK)
+        self.commandDelegate.send(pluginResult, callbackId: command.callbackId)
     }
 }
 
