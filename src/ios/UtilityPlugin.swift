@@ -31,17 +31,30 @@ import Foundation
         return String(format: "%0.1f", diagonal)
     }
     
-    var totalDiskSpaceInBytes:Int64 {
-        guard let systemAttributes = try? FileManager.default.attributesOfFileSystem(forPath: NSHomeDirectory() as String),
-            let space = (systemAttributes[FileAttributeKey.systemSize] as? NSNumber)?.int64Value else { return 0 }
-        return space
+    
+    fileprivate func getFreeDiskSpaceInBytes() -> Int {
+        if #available(iOS 11.0, *) {
+            if let space = try? URL(fileURLWithPath: NSHomeDirectory() as String).resourceValues(forKeys: [URLResourceKey.volumeAvailableCapacityForImportantUsageKey]).volumeAvailableCapacityForImportantUsage {
+                return Int(truncatingIfNeeded: space) ?? 0
+            } else {
+                return 0
+            }
+        } else {
+            if let systemAttributes = try? FileManager.default.attributesOfFileSystem(forPath: NSHomeDirectory() as String),
+               let freeSpace = (systemAttributes[FileAttributeKey.systemFreeSize] as? NSNumber)?.int64Value {
+                return Int(truncatingIfNeeded: freeSpace)
+            } else {
+                return 0
+            }
+        }
     }
     
-    var availableDiskSpaceInBytes:Int64 {
+    fileprivate func getTotalDiskSpaceInBytes() -> Int64 {
         guard let systemAttributes = try? FileManager.default.attributesOfFileSystem(forPath: NSHomeDirectory() as String),
-              let space = (systemAttributes[FileAttributeKey.systemFreeSize] as? NSNumber)?.int64Value else { return 0 }
-        return space
+              let space = (systemAttributes[FileAttributeKey.systemSize] as? NSNumber)?.int64Value else { return 0 }
+        return  space
     }
+    
     
     @objc
     func getBuildConfigValue(_ command: CDVInvokedUrlCommand) {
@@ -141,7 +154,8 @@ import Foundation
     @objc
     func getDeviceSpec(_ command: CDVInvokedUrlCommand) {
         var specs = [String: Any]()
-        let sizeInGB = ByteCountFormatter.string(fromByteCount: totalDiskSpaceInBytes, countStyle: ByteCountFormatter.CountStyle.decimal)
+        let total = getTotalDiskSpaceInBytes()
+        let sizeInGB = ByteCountFormatter.string(fromByteCount: total, countStyle: ByteCountFormatter.CountStyle.decimal)
         let deviceInfo = UIDevice.current;
         specs["os"] = deviceInfo.systemName + " " + deviceInfo.systemVersion
         specs["id"] = deviceInfo.identifierForVendor?.uuidString
@@ -175,7 +189,7 @@ import Foundation
         var results = [String: Any]()
         for identifier in identifiersList {
             let directoryPath = "file://" + parentDirectoryPath + "/" + identifier
-            if !directoryExistsAtPath(directoryPath) { 
+            if !directoryExistsAtPath(directoryPath) {
                 let created = try? FileManager.default.createDirectory(atPath: directoryPath, withIntermediateDirectories: false, attributes: nil)
                 if created != nil {
                     results[identifier] = ["path": directoryPath]
@@ -279,8 +293,18 @@ import Foundation
     
     @objc
     func getStorageVolumes(_ command: CDVInvokedUrlCommand) {
-        // TODO skipping implementation for now
-        let pluginResult: CDVPluginResult = CDVPluginResult.init(status: CDVCommandStatus_OK)
+        var pluginResult: CDVPluginResult = CDVPluginResult.init(status: CDVCommandStatus_ERROR)
+        let free = getFreeDiskSpaceInBytes()
+        let total = getTotalDiskSpaceInBytes()
+        var storageVolume = [String: Any]()
+        storageVolume["availableSize"] = free
+        storageVolume["totalSize"] =  ByteCountFormatter.string(fromByteCount: total, countStyle: ByteCountFormatter.CountStyle.decimal)
+        storageVolume["state"] = "mounted" // hardcoding this value for ios
+        storageVolume["path"] = "\(NSSearchPathForDirectoriesInDomains(.documentDirectory, .userDomainMask, true)[0])"
+        storageVolume["isRemovable"] = false // hardcoding this value for ios
+        storageVolume["contentStoragePath"] = "\(NSSearchPathForDirectoriesInDomains(.documentDirectory, .userDomainMask, true)[0])"
+        let results = [storageVolume]
+        pluginResult = CDVPluginResult.init(status: CDVCommandStatus_OK, messageAs: results)
         self.commandDelegate.send(pluginResult, callbackId: command.callbackId)
     }
     
@@ -361,7 +385,8 @@ import Foundation
         var pluginResult: CDVPluginResult = CDVPluginResult.init(status: CDVCommandStatus_OK, messageAs: freeSize)
         let directory = command.arguments[1] as? String
         if let _ = directory {
-            freeSize = Int(availableDiskSpaceInBytes)
+            let free = getFreeDiskSpaceInBytes()
+            freeSize = Int(free)
             pluginResult = CDVPluginResult.init(status: CDVCommandStatus_OK, messageAs: freeSize)
         }
         self.commandDelegate.send(pluginResult, callbackId: command.callbackId)
@@ -478,5 +503,4 @@ import Foundation
         self.commandDelegate.send(pluginResult, callbackId: command.callbackId)
     }
 }
-
 
