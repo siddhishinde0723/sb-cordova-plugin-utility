@@ -59,22 +59,28 @@ import Foundation
     @objc
     func getBuildConfigValue(_ command: CDVInvokedUrlCommand) {
         var pluginResult: CDVPluginResult = CDVPluginResult.init(status: CDVCommandStatus_ERROR)
-        let appVersion = Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? ""
-        guard  appVersion != "" else {
-            print("appVersion is nil")
+        let param = command.arguments[1] as! String
+        let data = Bundle.main.infoDictionary?[param] as? String ?? ""
+        guard  data != "" else {
+            print("\(param) is nil")
             self.commandDelegate.send(pluginResult, callbackId: command.callbackId)
             return
         }
-        pluginResult = CDVPluginResult.init(status: CDVCommandStatus_OK, messageAs: appVersion)
+        pluginResult = CDVPluginResult.init(status: CDVCommandStatus_OK, messageAs: data)
         self.commandDelegate.send(pluginResult, callbackId: command.callbackId)
     }
     
     @objc
     func getBuildConfigValues(_ command: CDVInvokedUrlCommand) {
-        //TODO: Need to implement build config values implementation¯
-        let buildConfigValues = "{\"DISPLAY_SIGNIN_FOOTER_CARD_IN_PROFILE_TAB_FOR_TEACHER\":true,\"TOU_BASE_URL\":\"https://static.preprod.ntp.net.in\",\"APPLICATION_ID\":\"staging.diksha.app\",\"MERGE_ACCOUNT_BASE_URL\":\"https://merge.staging.sunbirded.org\",\"OAUTH_REDIRECT_URL\":\"staging.diksha.app://mobile\",\"TRACK_USER_TELEMETRY\":true,\"PRODUCER_ID\":\"staging.diksha.app\",\"DISPLAY_SIGNIN_FOOTER_CARD_IN_COURSE_TAB_FOR_TEACHER\":true,\"OAUTH_SESSION\":\"org.genie.KeycloakOAuthSessionService\",\"SUPPORT_EMAIL\":\"support@teamdiksha.org\",\"DISPLAY_FRAMEWORK_CATEGORIES_IN_PROFILE\":true,\"REAL_VERSION_NAME\":\"3.6.local.0-debug\",\"MOBILE_APP_CONSUMER\":\"mobile_device\",\"DISPLAY_SIGNIN_FOOTER_CARD_IN_PROFILE_TAB_FOR_STUDENT\":false,\"MOBILE_APP_SECRET\":\"c0MsZyjLdKYMz255KKRvP0TxVbkeNFlx\",\"CONTENT_STREAMING_ENABLED\":true,\"FLAVOR\":\"staging\",\"USE_CRASHLYTICS\":false,\"CHANNEL_ID\":\"505c7c48ac6dc1edc9b08f21db5a571d\",\"DISPLAY_ONBOARDING_CATEGORY_PAGE\":true,\"MOBILE_APP_KEY\":\"sunbird-0.1\",\"BUILD_TYPE\":\"debug\",\"DISPLAY_SIGNIN_FOOTER_CARD_IN_LIBRARY_TAB_FOR_STUDENT\":false,\"MAX_COMPATIBILITY_LEVEL\":4,\"VERSION_CODE\":90,\"DEBUG\":true,\"OPEN_RAPDISCOVERY_ENABLED\":true,\"VERSION_NAME\":\"3.6.local\",\"BASE_URL\":\"https://staging.sunbirded.org\",\"DISPLAY_SIGNIN_FOOTER_CARD_IN_LIBRARY_TAB_FOR_TEACHER\":true}"
-        let pluginResult:CDVPluginResult = CDVPluginResult.init(status: CDVCommandStatus_OK, messageAs: buildConfigValues)
-        self.commandDelegate.send(pluginResult, callbackId: command.callbackId)
+        if let theJSONData = try?  JSONSerialization.data(
+          withJSONObject: Bundle.main.infoDictionary!,
+            options: .prettyPrinted
+          ),
+          let buildConfigValues = String(data: theJSONData,
+                                   encoding: String.Encoding.ascii) {
+            let pluginResult:CDVPluginResult = CDVPluginResult.init(status: CDVCommandStatus_OK, messageAs: buildConfigValues)
+            self.commandDelegate.send(pluginResult, callbackId: command.callbackId)
+        }
     }
     
     @objc
@@ -279,7 +285,7 @@ import Foundation
     @objc
     func getUtmInfo(_ command: CDVInvokedUrlCommand) {
         // TODO skipping implementation for now
-        let pluginResult: CDVPluginResult = CDVPluginResult.init(status: CDVCommandStatus_OK)
+        let pluginResult: CDVPluginResult = CDVPluginResult.init(status: CDVCommandStatus_OK, messageAs: "")
         self.commandDelegate.send(pluginResult, callbackId: command.callbackId)
     }
     
