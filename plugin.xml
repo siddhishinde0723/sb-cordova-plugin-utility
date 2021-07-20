@@ -34,7 +34,6 @@
       <source-file src="src/android/org/sunbird/support/Base64Util.java" target-dir="src/org/sunbird/support" />
       <source-file src="src/android/org/sunbird/support/JWTokenType.java" target-dir="src/org/sunbird/support" />
       <source-file src="src/android/org/sunbird/support/SunbirdFileHandler.java" target-dir="src/org/sunbird/support" />
-      <source-file src="src/android/org/sunbird/appupdate/InAppUpdateManager.java" target-dir="src/org/sunbird/appupdate" />
 
     </platform>
 
