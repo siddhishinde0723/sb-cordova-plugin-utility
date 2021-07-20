@@ -34,7 +34,6 @@ import org.apache.cordova.PluginResult;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
-import org.sunbird.appupdate.InAppUpdateManager;
 import org.sunbird.storage.StorageUtil;
 import org.sunbird.support.SunbirdFileHandler;
 import org.sunbird.utm.InstallReferrerListener;
@@ -182,45 +181,8 @@ public class UtilityPlugin extends CordovaPlugin {
             final String appFlavor = BuildConfigUtil.getBuildConfigValue("org.sunbird.app", "FLAVOR");
             String appName = cordova.getActivity().getString(UtilityPlugin.getIdOfResource(cordova, "_app_name", "string"));
             SunbirdFileHandler.removeFile(cordova.getActivity(), appName, appFlavor);
-        }else if (action.equals("immediate")) {
-            Context context = cordova.getActivity().getApplicationContext();
-            InAppUpdateManager.startUpdateCheck(appUpdateManager, cordova.getActivity());
-            return true;
-        }else if (action.equals("isUpdateAvailable")) {
-            Context context = cordova.getActivity().getApplicationContext();
-            InAppUpdateManager.isUpdateAvailable(appUpdateManager, callbackContext);
-            return true;
         }
         return false;
-    }
-
-    @Override
-    public void onResume(boolean multitaskin) {
-        super.onResume(multitaskin);
-        Log.d("InAppUpdateManager", "OnResume called InAppUpdateManager");
-        if (appUpdateManager == null) {
-            Context context = cordova.getActivity().getApplicationContext();
-            appUpdateManager = AppUpdateManagerFactory.create(context);
-        }
-        appUpdateManager
-                .getAppUpdateInfo()
-                .addOnSuccessListener(
-                        appUpdateInfo -> {
-                            if (appUpdateInfo.updateAvailability()
-                                    == UpdateAvailability.DEVELOPER_TRIGGERED_UPDATE_IN_PROGRESS) {
-                                // If an in-app update is already running, resume the update.
-                                try {
-                                    appUpdateManager.startUpdateFlowForResult(
-                                            appUpdateInfo,
-                                            AppUpdateType.IMMEDIATE,
-                                            cordova.getActivity(),
-                                            InAppUpdateManager.REQUEST_CODE);
-                                } catch (IntentSender.SendIntentException e) {
-                                    e.printStackTrace();
-                                }
-                            }
-                        }
-                );
     }
 
     /**
