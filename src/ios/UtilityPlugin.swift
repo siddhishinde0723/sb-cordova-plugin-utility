@@ -35,7 +35,7 @@ import Foundation
     fileprivate func getFreeDiskSpaceInBytes() -> Int {
         if #available(iOS 11.0, *) {
             if let space = try? URL(fileURLWithPath: NSHomeDirectory() as String).resourceValues(forKeys: [URLResourceKey.volumeAvailableCapacityForImportantUsageKey]).volumeAvailableCapacityForImportantUsage {
-                return Int(truncatingIfNeeded: space) ?? 0
+                return Int(truncatingIfNeeded: space ?? 0)
             } else {
                 return 0
             }
