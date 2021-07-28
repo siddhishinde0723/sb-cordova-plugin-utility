@@ -306,9 +306,9 @@ import Foundation
         storageVolume["availableSize"] = free
         storageVolume["totalSize"] =  ByteCountFormatter.string(fromByteCount: total, countStyle: ByteCountFormatter.CountStyle.decimal)
         storageVolume["state"] = "mounted" // hardcoding this value for ios
-        storageVolume["path"] = "\(NSSearchPathForDirectoriesInDomains(.documentDirectory, .userDomainMask, true)[0])"
+        storageVolume["path"] = "file://\(NSSearchPathForDirectoriesInDomains(.documentDirectory, .userDomainMask, true)[0])"
         storageVolume["isRemovable"] = false // hardcoding this value for ios
-        storageVolume["contentStoragePath"] = "\(NSSearchPathForDirectoriesInDomains(.documentDirectory, .userDomainMask, true)[0])"
+        storageVolume["contentStoragePath"] = "file://\(NSSearchPathForDirectoriesInDomains(.documentDirectory, .userDomainMask, true)[0])"
         let results = [storageVolume]
         pluginResult = CDVPluginResult.init(status: CDVCommandStatus_OK, messageAs: results)
         self.commandDelegate.send(pluginResult, callbackId: command.callbackId)
