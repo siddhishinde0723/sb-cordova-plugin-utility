@@ -4,7 +4,7 @@ import CommonCrypto
 
 let SUPPORT_FILE: String = "_support.txt"
 let CONFIG_FILE: String = ".txt"
-let SUPPORT_DIRECTORY: String = "support"
+let SUPPORT_DIRECTORY: String = "support
 let DIRECTORY_NAME_SEPERATOR: String = "-"
 let SEPERATOR: String = "~"
 
@@ -332,7 +332,7 @@ class DeviceSpec {
         }
         var results = [String: Any]()
         for identifier in identifiersList {
-            let directoryPath = "file://" + parentDirectoryPath + "/" + identifier
+            let directoryPath = "file://" + parentDirectoryPath + identifier
             if !directoryExistsAtPath(directoryPath) {
                 let created = try? FileManager.default.createDirectory(atPath: directoryPath, withIntermediateDirectories: false, attributes: nil)
                 if created != nil {
@@ -369,6 +369,42 @@ class DeviceSpec {
     }
     
     @objc
+    func getDirectorySize(urlToInclude: URL) -> Int64 {
+       
+        let contents: [URL]
+            do {
+                contents = try FileManager.default.contentsOfDirectory(at: urlToInclude, includingPropertiesForKeys: [.fileSizeKey, .isDirectoryKey])
+            } catch {
+                return 0
+            }
+
+            var size: Int64 = 0
+
+            for url in contents {
+                let isDirectoryResourceValue: URLResourceValues
+                do {
+                    isDirectoryResourceValue = try url.resourceValues(forKeys: [.isDirectoryKey])
+                } catch {
+                    continue
+                }
+
+                if isDirectoryResourceValue.isDirectory == true {
+                    size += getDirectorySize(urlToInclude: url)
+                } else {
+                    let fileSizeResourceValue: URLResourceValues
+                    do {
+                        fileSizeResourceValue = try url.resourceValues(forKeys: [.fileSizeKey])
+                    } catch {
+                        continue
+                    }
+
+                    size += Int64(fileSizeResourceValue.fileSize ?? 0)
+                }
+            }
+            return size
+    }
+    
+    @objc
     func getMetaData(_ command: CDVInvokedUrlCommand) {
         var pluginResult: CDVPluginResult;
         let inputArray = command.arguments[1] as? [[String: Any]] ?? [];
@@ -377,16 +413,29 @@ class DeviceSpec {
             let fileManager = FileManager.default
             for config in inputArray {
                 let filePath: String? = config["path"] as? String
+                let contents: [String]
+                    do {
+                        contents = try fileManager.contentsOfDirectory(atPath: filePath!)
+                    } catch {
+                        
+                    }
                 let identifier: String? = config["identifier"] as? String
                 if filePath != nil && identifier != nil {
                     do {
-                        let attr : NSDictionary? = try fileManager.attributesOfItem(atPath: filePath!) as NSDictionary
-                        if let _attr = attr {
+                        //let attr : NSDictionary? = try fileManager.attributesOfItem(atPath: actualPath!) as NSDictionary
+                        //let attr : NSDictionary? = try fileManager.attributesOfFileSystem(forPath: actualPath!) as NSDictionary
+                        let size = getDirectorySize(urlToInclude: URL(fileURLWithPath: filePath!)) as Int64
+                        /*if let _attr = attr {
                             var attributes: [String: Any] = [:]
                             attributes["size"] = _attr.fileSize();
                             attributes["fileModificationDate"] = _attr.fileModificationDate()
                             output[identifier!] = attributes
                         }
+                        }*/
+                        var attributes: [String: Any] = [:]
+                        attributes["size"] = size;
+                        attributes["fileModificationDate"] = nil
+                        output[identifier!] = attributes
                     } catch let error {
                         print("failed to fetch file attributes at \(String(describing: filePath))")
                         print("Error: \(error)")
@@ -444,9 +493,9 @@ class DeviceSpec {
         storageVolume["availableSize"] = free
         storageVolume["totalSize"] =  ByteCountFormatter.string(fromByteCount: total, countStyle: ByteCountFormatter.CountStyle.decimal)
         storageVolume["state"] = "mounted" // hardcoding this value for ios
-        storageVolume["path"] = "file://\(NSSearchPathForDirectoriesInDomains(.documentDirectory, .userDomainMask, true)[0])"
+        storageVolume["path"] = "\(NSSearchPathForDirectoriesInDomains(.documentDirectory, .userDomainMask, true)[0])"
         storageVolume["isRemovable"] = false // hardcoding this value for ios
-        storageVolume["contentStoragePath"] = "file://\(NSSearchPathForDirectoriesInDomains(.documentDirectory, .userDomainMask, true)[0])"
+        storageVolume["contentStoragePath"] = "\(NSSearchPathForDirectoriesInDomains(.documentDirectory, .userDomainMask, true)[0])"
         let results = [storageVolume]
         pluginResult = CDVPluginResult.init(status: CDVCommandStatus_OK, messageAs: results)
         self.commandDelegate.send(pluginResult, callbackId: command.callbackId)
@@ -804,4 +853,5 @@ class DeviceSpec {
         }
     }
 }
+
 
