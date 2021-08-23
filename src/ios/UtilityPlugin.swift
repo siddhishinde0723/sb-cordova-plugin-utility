@@ -4,7 +4,7 @@ import CommonCrypto
 
 let SUPPORT_FILE: String = "_support.txt"
 let CONFIG_FILE: String = ".txt"
-let SUPPORT_DIRECTORY: String = "support
+let SUPPORT_DIRECTORY: String = "support"
 let DIRECTORY_NAME_SEPERATOR: String = "-"
 let SEPERATOR: String = "~"
 
