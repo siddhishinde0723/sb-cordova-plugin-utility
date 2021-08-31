@@ -204,6 +204,8 @@ import Foundation
                    print(error.localizedDescription)
                }
                 
+            } else {
+                results[identifier] = ["path": "file://"+directoryPath]
             }
         }
         pluginResult = CDVPluginResult.init(status: CDVCommandStatus_OK, messageAs: results)
