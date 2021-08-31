@@ -481,6 +481,10 @@ import Foundation
             if fileManager.fileExists(atPath: sourceFilePath) {
                 print("File exists")
                 do {
+                    if(fileManager.fileExists(atPath: destinationFilePath)) {
+                        print("Destination File exists Do Overwrite")
+                        try fileManager.removeItem(atPath: destinationFilePath)
+                    }
                     try fileManager.copyItem(atPath: sourceFilePath, toPath: destinationFilePath)
                     
                     print("Copy successful")
