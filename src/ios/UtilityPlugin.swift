@@ -332,14 +332,18 @@ class DeviceSpec {
         }
         var results = [String: Any]()
         for identifier in identifiersList {
-            let directoryPath = "file://" + parentDirectoryPath + identifier
+            let directoryPath = parentDirectoryPath + identifier
             if !directoryExistsAtPath(directoryPath) {
-                let created = try? FileManager.default.createDirectory(atPath: directoryPath, withIntermediateDirectories: false, attributes: nil)
-                if created != nil {
-                    results[identifier] = ["path": directoryPath]
-                } else {
-                    print("Error creating directory at path \(directoryPath)")
+                do {
+                    let created = try? FileManager.default.createDirectory(atPath: directoryPath, withIntermediateDirectories: true, attributes: nil)
+                    results[identifier] = ["path": "file://"+directoryPath]
                 }
+                catch let error as NSError {
+                   print(error.localizedDescription)
+               }
+                
+            } else {
+                results[identifier] = ["path": "file://"+directoryPath]
             }
         }
         pluginResult = CDVPluginResult.init(status: CDVCommandStatus_OK, messageAs: results)
@@ -623,6 +627,10 @@ class DeviceSpec {
             if fileManager.fileExists(atPath: sourceFilePath) {
                 print("File exists")
                 do {
+                    if(fileManager.fileExists(atPath: destinationFilePath)) {
+                        print("Destination File exists Do Overwrite")
+                        try fileManager.removeItem(atPath: destinationFilePath)
+                    }
                     try fileManager.copyItem(atPath: sourceFilePath, toPath: destinationFilePath)
                     
                     print("Copy successful")
