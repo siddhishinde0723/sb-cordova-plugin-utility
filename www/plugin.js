@@ -98,6 +98,9 @@ var sbutility = {
     },
     removeFile: function (success, error) {
       exec(success, error, PLUGIN_NAME, PLUGIN_NAME, ["removeFile"]);
+    },
+    getGoogleService: function (onSuccess, onError) {
+        exec(onSuccess, onError, PLUGIN_NAME, "getGoogleService", ["getGoogleService"])
     }
 };
 

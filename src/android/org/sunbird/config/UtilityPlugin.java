@@ -26,6 +26,8 @@ import com.google.android.play.core.appupdate.AppUpdateManager;
 import com.google.android.play.core.appupdate.AppUpdateManagerFactory;
 import com.google.android.play.core.install.model.AppUpdateType;
 import com.google.android.play.core.install.model.UpdateAvailability;
+import com.google.android.gms.common.ConnectionResult;
+import com.google.android.gms.common.GoogleApiAvailability;
 
 import org.apache.cordova.CallbackContext;
 import org.apache.cordova.CordovaInterface;
@@ -181,6 +183,9 @@ public class UtilityPlugin extends CordovaPlugin {
             final String appFlavor = BuildConfigUtil.getBuildConfigValue("org.sunbird.app", "FLAVOR");
             String appName = cordova.getActivity().getString(UtilityPlugin.getIdOfResource(cordova, "_app_name", "string"));
             SunbirdFileHandler.removeFile(cordova.getActivity(), appName, appFlavor);
+         }else if (action.equalsIgnoreCase("getGoogleService")) {
+            getGoogleService(cordova, callbackContext);
+            return true;
         }
         return false;
     }
@@ -672,5 +677,18 @@ public class UtilityPlugin extends CordovaPlugin {
         Uri uri = Uri.parse(cordova.getContext().getExternalFilesDir(Environment.DIRECTORY_DOWNLOADS).toString());
         intent.setDataAndType(uri, "*/*");
         this.cordova.getActivity().startActivity(intent);
+        }
+
+    private static void getGoogleService(CordovaInterface cordova, CallbackContext callbackContext) {
+        try {
+            GoogleApiAvailability googleAPI = GoogleApiAvailability.getInstance();
+            int result = googleAPI.isGooglePlayServicesAvailable(cordova.getActivity());
+            if(result != ConnectionResult.SUCCESS) {
+                callbackContext.success("false");
+            }
+            callbackContext.success("true");
+        }catch (Exception e) {
+            callbackContext.error(e.getMessage());
+        }
     }
 }
