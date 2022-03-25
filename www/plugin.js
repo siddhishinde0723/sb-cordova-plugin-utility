@@ -107,6 +107,9 @@ var sbutility = {
     },
     decodeJWTToken: function (token, success, error) {
         exec(success, error, PLUGIN_NAME, "decodeJWTToken", ["decodeJWTToken", token]);
+    },
+    getGoogleService: function (onSuccess, onError) {
+        exec(onSuccess, onError, PLUGIN_NAME, "getGoogleService", ["getGoogleService"])
     }
 };
 
