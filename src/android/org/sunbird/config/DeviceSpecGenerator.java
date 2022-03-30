@@ -18,7 +18,7 @@ import android.webkit.WebView;
 
 import org.json.JSONException;
 import org.json.JSONObject;
-import org.sunbird.support.CryptoUtil;
+import org.sunbird.config.CryptoUtil;
 
 import java.io.BufferedReader;
 import java.io.File;
