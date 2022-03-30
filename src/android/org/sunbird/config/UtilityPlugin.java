@@ -183,8 +183,8 @@ public class UtilityPlugin extends CordovaPlugin {
             final String appFlavor = BuildConfigUtil.getBuildConfigValue("org.sunbird.app", "FLAVOR");
             String appName = cordova.getActivity().getString(UtilityPlugin.getIdOfResource(cordova, "_app_name", "string"));
             SunbirdFileHandler.removeFile(cordova.getActivity(), appName, appFlavor);
-         }else if (action.equalsIgnoreCase("getGoogleService")) {
-            getGoogleService(cordova, callbackContext);
+         }else if (action.equalsIgnoreCase("isGoogleServicesAvailable")) {
+            isGoogleServicesAvailable(cordova, callbackContext);
             return true;
         }
         return false;
@@ -679,7 +679,7 @@ public class UtilityPlugin extends CordovaPlugin {
         this.cordova.getActivity().startActivity(intent);
         }
 
-    private static void getGoogleService(CordovaInterface cordova, CallbackContext callbackContext) {
+    private static void isGoogleServicesAvailable(CordovaInterface cordova, CallbackContext callbackContext) {
         try {
             GoogleApiAvailability googleAPI = GoogleApiAvailability.getInstance();
             int result = googleAPI.isGooglePlayServicesAvailable(cordova.getActivity());
