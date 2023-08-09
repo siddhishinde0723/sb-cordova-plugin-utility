@@ -1,5 +1,5 @@
 # sb-cordova-plugin-sbutility
-A plugin to sync Telemetry events and Course progress.
+A utility plugin to enable various native capabilities in Sunbird-mobile-app.
 
 ## Installation
 
@@ -24,24 +24,24 @@ Clone the repo then execute the following command
     * [.getDownloadDirectoryPath(successCallback, errorCallback)](#module_sbutility.getDownloadDirectoryPath)
     * [.exportApk(destination, successCallback, errorCallback)](#module_sbutility.exportApk)
     * [.getDeviceSpec(successCallback, errorCallback)](#module_sbutility.getDeviceSpec)
-    * [.createDirectories(successCallback, errorCallback)](#module_sbutility.createDirectories)
-    * [.writeFile(successCallback, errorCallback)](#module_sbutility.writeFile)
-    * [.getMetaData(successCallback, errorCallback)](#module_sbutility.getMetaData)
+    * [.createDirectories(parentDirectory, identifiers, successCallback, errorCallback)](#module_sbutility.createDirectories)
+    * [.writeFile(fileMapList, successCallback, errorCallback)](#module_sbutility.writeFile)
+    * [.getMetaData(fileMapList, successCallback, errorCallback)](#module_sbutility.getMetaData)
      * [.getAvailableInternalMemorySize(successCallback, errorCallback)](#module_sbutility.getAvailableInternalMemorySize)
     * [.getUtmInfo(successCallback, errorCallback)](#module_sbutility.getUtmInfo)
     * [.clearUtmInfo(successCallback, errorCallback)](#module_sbutility.clearUtmInfo)
     * [.getStorageVolumes(successCallback, errorCallback)](#module_sbutility.getStorageVolumes)
-    * [.copyDirectory(successCallback, errorCallback)](#module_sbutility.copyDirectory)
-    * [.renameDirectory(successCallback, errorCallback)](#module_sbutility.renameDirectory)
-    * [.canWrite(successCallback, errorCallback)](#module_sbutility.canWrite)
+    * [.copyDirectory(sourceDirectory, destinationDirectory, successCallback, errorCallback)](#module_sbutility.copyDirectory)
+    * [.renameDirectory(sourceDirectory, toDirectoryName,successCallback, errorCallback)](#module_sbutility.renameDirectory)
+    * [.canWrite(directory, successCallback, errorCallback)](#module_sbutility.canWrite)
     * [.writeFile(successCallback, errorCallback)](#module_sbutility.writeFile)
-    * [.getFreeUsableSpace(successCallback, errorCallback)](#module_sbutility.getFreeUsableSpace)
-    * [.readFromAssets(successCallback, errorCallback)](#module_sbutility.readFromAssets)
-    * [.copyFile(successCallback, errorCallback)](#module_sbutility.copyFile)
+    * [.getFreeUsableSpace(directory, successCallback, errorCallback)](#module_sbutility.getFreeUsableSpace)
+    * [.readFromAssets(filePath, successCallback, errorCallback)](#module_sbutility.readFromAssets)
+    * [.copyFile(sourceDirectory, destinationDirectory, fileName, successCallback, errorCallback)](#module_sbutility.copyFile)
     * [.getApkSize(successCallback, errorCallback)](#module_sbutility.getApkSize)
-    * [.verifyCaptcha(successCallback, errorCallback)](#module_sbutility.verifyCaptcha)
-     * [.startActivityForResult(successCallback, errorCallback)](#module_sbsync.startActivityForResult)
-    * [.getAppAvailabilityStatus(successCallback, errorCallback)](#module_sbutility.getAppAvailabilityStatus)
+    * [.verifyCaptcha(apiKey, successCallback, errorCallback)](#module_sbutility.verifyCaptcha)
+     * [.startActivityForResult(params, successCallback, errorCallback)](#module_sbutility.startActivityForResult)
+    * [.getAppAvailabilityStatus(appList, successCallback, errorCallback)](#module_sbutility.getAppAvailabilityStatus)
     * [.openFileManager(successCallback, errorCallback)](#module_sbutility.openFileManager)
 
 
@@ -86,4 +86,93 @@ Extracts the apk to given location.
 
 - `destination` represents destination directory.
 
+### sbutility.getDeviceSpec(successCallback, errorCallback)
+Extracts the apk to given location.
+
+- `destination` represents destination directory.
+
+### sbutility.createDirectories(parentDirectory, identifiers, successCallback, errorCallback)
+Createss directories inside given root directory.
+
+- `parentDirectory` represents root directory.
+- `identifiers` represents folder names.
+
+### sbutility.writeFile(fileMapList, successCallback, errorCallback)
+Writes file in the given directory path.
+
+- `fileMapList` represents a map containing file name as key and destination as value.
+
+### sbutility.getMetaData(fileMapList, successCallback, errorCallback)
+Returns metadata of the files given in the map.
+
+- `fileMapList` represents a map containing file name as key and destination as value.
+
+### sbutility.getAvailableInternalMemorySize(successCallback, errorCallback)
+Returns internal memory size.
+
+### sbutility.getUtmInfo(successCallback, errorCallback)
+If a playstore link is clicked and that link has some UTM info then those UTM info is stored in preference and this method returns the UTM info.
+
+### sbutility.clearUtmInfo(successCallback, errorCallback)
+Clears the UTM info stored while playstore link click.
+
+### sbutility.getStorageVolumes(successCallback, errorCallback)
+Returns number of storage volumes available in the device.
+
+### sbutility.copyDirectory(sourceDirectory, destinationDirectory, successCallback, errorCallback)
+Copies directory from source directory to destination.
+
+- `sourceDirectory` represents source directory path.
+- `destinationDirectory` represents destination directory path.
+
+### sbutility.renameDirectory(sourceDirectory, toDirectoryName, successCallback, errorCallback)
+Rename the directory name.
+
+- `sourceDirectory` represents source directory path.
+- `toDirectoryName` represents new directory name.
+
+### sbutility.canWrite(directory, destinationDirectory, successCallback, errorCallback)
+Returns if directory is writable or not.
+
+- `directory` represents  directory path.
+- `destinationDirectory` represents destination directory path.
+
+
+### sbutility.getFreeUsableSpace(directory, successCallback, errorCallback)
+Returns free space available in given directory
+
+- `directory` represents source directory path.
+
+### sbutility.readFromAssets(filePath, successCallback, errorCallback)
+Clears the UTM info stored while playstore link click.
+
+- `directory` represents source directory path.
+
+### sbutility.copyFile(sourceDirectory, destinationDirectory, fileName, successCallback, errorCallback)
+Copies file from source directory to destination directory.
+
+- `sourceDirectory` represents source directory path.
+- `destinationDirectory` represents destination directory path.
+- `fileName` represents name of the file.
+
+### sbutility.getApkSize(successCallback, errorCallback)
+Returns size of the APK.
+
+### sbutility.verifyCaptcha(apiKey, successCallback, errorCallback)
+verifies the captcha.
+
+- `apiKey` represents API key of Google CAPTCHA.
+
+### sbutility.startActivityForResult(params, successCallback, errorCallback)
+Starts  a new activity while wating for result.
+
+- `params` represents parametrs taht will be sent to another activity.
+
+### sbutility.getAppAvailabilityStatus(appList, successCallback, errorCallback)
+Returns app availability status on the device.
+
+- `appList` represents list of app package id.
+
+### sbutility.openFileManager(successCallback, errorCallback)
+Opens File Manager
 
