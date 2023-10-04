@@ -13,6 +13,8 @@
     
     <!-- android -->
     <platform name="android">
+      <framework src="com.android.installreferrer:installreferrer:1.1" />
+      <framework src="com.google.android.gms:play-services-safetynet:16.0.0" />  
       <framework src="com.google.android.play:core:1.6.1" />
       <config-file target="res/xml/config.xml" parent="/*">
         <feature name="sbutility">
