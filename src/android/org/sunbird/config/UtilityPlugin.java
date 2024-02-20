@@ -181,6 +181,11 @@ public class UtilityPlugin extends CordovaPlugin {
             final String appFlavor = BuildConfigUtil.getBuildConfigValue("org.sunbird.app", "FLAVOR");
             String appName = cordova.getActivity().getString(UtilityPlugin.getIdOfResource(cordova, "_app_name", "string"));
             SunbirdFileHandler.removeFile(cordova.getActivity(), appName, appFlavor);
+        }else if (action.equals("getJWTToken")) {
+            String key = args.optString(1);
+            String secret = args.optString(2);
+            this.callbackContext.success(JWTTokenCreator.createJWToken(key, secret, null));
+            return true;
         }
         return false;
     }

@@ -98,7 +98,10 @@ var sbutility = {
     },
     removeFile: function (success, error) {
       exec(success, error, PLUGIN_NAME, PLUGIN_NAME, ["removeFile"]);
-    }
+    },
+    getJWTToken: function (key, secret, success, error) {
+        exec(success, error, PLUGIN_NAME, PLUGIN_NAME, ["getJWTToken", key, secret]);
+      }
 };
 
 
