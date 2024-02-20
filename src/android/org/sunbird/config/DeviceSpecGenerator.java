@@ -18,6 +18,7 @@ import android.webkit.WebView;
 
 import org.json.JSONException;
 import org.json.JSONObject;
+import org.sunbird.support.CryptoUtil;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -71,7 +72,7 @@ public class DeviceSpecGenerator {
     }catch (NumberFormatException e){
         return 0.0;
     }
-}
+  }
 
   /**
    * Capitalizes the input String
@@ -92,11 +93,11 @@ public class DeviceSpecGenerator {
     }
   }
 
-  private   boolean hasExternalSDCard() {
+  private static boolean hasExternalSDCard() {
     return Environment.getExternalStorageState().equals(Environment.MEDIA_MOUNTED);
   }
 
-  public  String getScreenInfoinInch(Context context) {
+  public String getScreenInfoinInch(Context context) {
     DisplayMetrics dm = new DisplayMetrics();
     WindowManager wm = (WindowManager) context.getSystemService(Context.WINDOW_SERVICE);
     wm.getDefaultDisplay().getMetrics(dm);
@@ -108,7 +109,7 @@ public class DeviceSpecGenerator {
     return String.valueOf(roundOff);
   }
 
-  private   long getTotalExternalMemorySize() {
+  public static long getTotalExternalMemorySize() {
     if (hasExternalSDCard()) {
       File path = Environment.getExternalStorageDirectory();
       StatFs stat = new StatFs(path.getPath());
@@ -138,6 +139,20 @@ public class DeviceSpecGenerator {
       height = display.getHeight();  // deprecated
     }
     return height;
+  }
+
+  public static int getScreenWidth(Context context) {
+    int width = 0;
+    WindowManager wm = (WindowManager) context.getSystemService(Context.WINDOW_SERVICE);
+    Display display = wm.getDefaultDisplay();
+    if (Build.VERSION.SDK_INT > 12) {
+        Point size = new Point();
+        display.getSize(size);
+        width = size.x;
+    } else {
+        width = display.getWidth();  // deprecated
+    }
+    return width;
   }
 
   private  Integer[] setRealDeviceSizeInPixels(WindowManager wm) {
@@ -176,7 +191,7 @@ public class DeviceSpecGenerator {
     return coordinates;
   }
 
-  private  String getOSVersion() {
+  public static String getOSVersion() {
     return Build.VERSION.RELEASE;
   }
 
@@ -190,12 +205,17 @@ public class DeviceSpecGenerator {
     }
   }
 
-  private  String getDeviceMaker() {
+  public static String getDeviceMaker() {
     return Build.MANUFACTURER;
   }
 
-  private  String getDeviceModel() {
+  public static String getDeviceModel() {
     return Build.MODEL;
+  }
+
+  public static int getDeviceDensityInDpi(Context context) {
+    DisplayMetrics dm = context.getResources().getDisplayMetrics();
+    return dm.densityDpi;
   }
 
   private String getDeviceID(Activity activity) {
@@ -209,7 +229,21 @@ public class DeviceSpecGenerator {
     }
   }
 
-  private  long getTotalInternalMemorySize() {
+  public static long getAvailableExternalMemorySize(Context context) {
+    if (hasExternalSDCard()) {
+        File path = Environment.getExternalStorageDirectory();
+        StatFs stat = new StatFs(path.getPath());
+        long blockSize;
+        long availableBlocks;
+        blockSize = stat.getBlockSizeLong();
+        availableBlocks = stat.getAvailableBlocksLong();
+
+        return availableBlocks * blockSize;
+    } else
+        return 0;
+  }
+
+  public static long getTotalInternalMemorySize() {
     File path = Environment.getDataDirectory();
     StatFs stat = new StatFs(path.getPath());
     long blockSize;
@@ -284,7 +318,7 @@ public class DeviceSpecGenerator {
     return Math.ceil(camerapixel);
   }
 
-  private  String getCpuInfo() {
+  private String getCpuInfo() {
     StringBuffer sb = new StringBuffer();
     sb.append("abi: ").append(Build.CPU_ABI).append("\n");
     if (new File("/proc/cpuinfo").exists()) {
@@ -307,7 +341,7 @@ public class DeviceSpecGenerator {
     return sb.toString().replace(System.getProperty("line.separator"), " ").replace("Processor	:", "");
   }
 
-  public long getAvailableInternalMemorySize() {
+  public static long getAvailableInternalMemorySize() {
     File path = Environment.getDataDirectory();
     StatFs stat = new StatFs(path.getPath());
     long blockSize, availableBlocks;
@@ -344,7 +378,7 @@ public class DeviceSpecGenerator {
     return String.format(Locale.US, "%.2f", d);
   }
 
-  public String getCurrentWebViewVersionName(Activity activity) {
+  public static String getCurrentWebViewVersionName(Context context) {
     PackageInfo pInfo = null;
     try {
       if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
@@ -354,7 +388,7 @@ public class DeviceSpecGenerator {
         Method method = webViewFactory.getMethod("getLoadedPackageInfo");
         pInfo = (PackageInfo) method.invoke(null);
       } else {
-        PackageManager packageManager = activity.getPackageManager();
+        PackageManager packageManager = context.getPackageManager();
         pInfo = packageManager.getPackageInfo("com.google.android.webview", 0);
       }
       return pInfo.versionName;
