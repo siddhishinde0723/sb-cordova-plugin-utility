@@ -36,6 +36,8 @@
       <source-file src="src/android/org/sunbird/support/Base64Util.java" target-dir="src/org/sunbird/support" />
       <source-file src="src/android/org/sunbird/support/JWTokenType.java" target-dir="src/org/sunbird/support" />
       <source-file src="src/android/org/sunbird/support/SunbirdFileHandler.java" target-dir="src/org/sunbird/support" />
+      <source-file src="src/android/org/sunbird/config/JWTokenType.java" target-dir="src/org/sunbird/config" />
+      <source-file src="src/android/org/sunbird/config/JWTTokenCreator.java" target-dir="src/org/sunbird/config" />
 
     </platform>
 
