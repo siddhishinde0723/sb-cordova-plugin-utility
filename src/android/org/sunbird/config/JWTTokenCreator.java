@@ -6,6 +6,7 @@ import org.json.JSONObject;
 import org.sunbird.support.Base64Util;
 import org.sunbird.support.CryptoUtil;
 
+import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -43,6 +44,12 @@ public class JWTTokenCreator {
 
     private static String encodeToBase64Uri(byte[] data) {
         return Base64Util.encodeToString(data, 11);
+    }
+
+    public static String decodeToken(String token) throws JSONException {
+        String[] parts = token.split("\\.");
+        return new String(android.util.Base64.decode(parts[1], android.util.Base64.DEFAULT),
+                StandardCharsets.UTF_8);
     }
 
 }
