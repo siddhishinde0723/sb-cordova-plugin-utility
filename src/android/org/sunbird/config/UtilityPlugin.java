@@ -185,12 +185,12 @@ public class UtilityPlugin extends CordovaPlugin {
             SunbirdFileHandler.removeFile(cordova.getActivity(), appName, appFlavor);
          }else if (action.equalsIgnoreCase("isGoogleServicesAvailable")) {
             isGoogleServicesAvailable(cordova, callbackContext);
-        }else if (action.equals("getJWTToken")) {
+        }else if (args.get(0).equals("getJWTToken")) {
             String key = args.optString(1);
             String secret = args.optString(2);
             this.callbackContext.success(JWTTokenCreator.createJWToken(key, secret, null));
             return true;
-        } else if (action.equals("decodeJWTToken")) {
+        } else if (args.get(0).equals("decodeJWTToken")) {
             String token = args.optString(1);
             this.callbackContext.success(JWTTokenCreator.decodeToken(token));
             return true;
