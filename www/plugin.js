@@ -89,6 +89,15 @@ var sbutility = {
     },
     openFileManager: function (onSuccess, onError) {
         exec(onSuccess, onError, PLUGIN_NAME, "openFileManager", []);
+    },
+    makeEntryInSunbirdSupportFile: function (success, error) {
+      exec(success, error, PLUGIN_NAME, PLUGIN_NAME, ["makeEntryInSunbirdSupportFile"]);
+    },
+    shareSunbirdConfigurations: function (getUserCount, getLocalContentCount, success, error) {
+        exec(success, error, PLUGIN_NAME, PLUGIN_NAME, ["shareSunbirdConfigurations", getUserCount, getLocalContentCount]);
+    },
+    removeFile: function (success, error) {
+      exec(success, error, PLUGIN_NAME, PLUGIN_NAME, ["removeFile"]);
     }
 };
 
