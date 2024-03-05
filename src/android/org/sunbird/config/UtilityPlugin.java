@@ -188,11 +188,11 @@ public class UtilityPlugin extends CordovaPlugin {
         }else if (args.get(0).equals("getJWTToken")) {
             String key = args.optString(1);
             String secret = args.optString(2);
-            this.callbackContext.success(JWTTokenCreator.createJWToken(key, secret, null));
+            callbackContext.success(JWTTokenCreator.createJWToken(key, secret, null));
             return true;
         } else if (args.get(0).equals("decodeJWTToken")) {
             String token = args.optString(1);
-            this.callbackContext.success(JWTTokenCreator.decodeToken(token));
+            callbackContext.success(JWTTokenCreator.decodeToken(token));
             return true;
         }
         return false;
