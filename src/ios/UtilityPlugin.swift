@@ -417,6 +417,8 @@ class DeviceSpec {
             let fileManager = FileManager.default
             for config in inputArray {
                 let filePath: String? = config["path"] as? String
+                
+                
                 let contents: [String]
                     do {
                         contents = try fileManager.contentsOfDirectory(atPath: filePath!)
@@ -426,16 +428,8 @@ class DeviceSpec {
                 let identifier: String? = config["identifier"] as? String
                 if filePath != nil && identifier != nil {
                     do {
-                        //let attr : NSDictionary? = try fileManager.attributesOfItem(atPath: actualPath!) as NSDictionary
-                        //let attr : NSDictionary? = try fileManager.attributesOfFileSystem(forPath: actualPath!) as NSDictionary
+                        
                         let size = getDirectorySize(urlToInclude: URL(fileURLWithPath: filePath!)) as Int64
-                        /*if let _attr = attr {
-                            var attributes: [String: Any] = [:]
-                            attributes["size"] = _attr.fileSize();
-                            attributes["fileModificationDate"] = _attr.fileModificationDate()
-                            output[identifier!] = attributes
-                        }
-                        }*/
                         var attributes: [String: Any] = [:]
                         attributes["size"] = size;
                         attributes["fileModificationDate"] = nil
@@ -861,5 +855,3 @@ class DeviceSpec {
         }
     }
 }
-
-

@@ -110,13 +110,7 @@ var sbutility = {
     },
     getGoogleService: function (onSuccess, onError) {
         exec(onSuccess, onError, PLUGIN_NAME, "getGoogleService", ["getGoogleService"]);
-    },
-    isGoogleServicesAvailable: function (onSuccess, onError) {
-        exec(onSuccess, onError, PLUGIN_NAME, "isGoogleServicesAvailable", ["isGoogleServicesAvailable"])
-    },
-    getJWTToken: function (key, secret, success, error) {
-        exec(success, error, PLUGIN_NAME, PLUGIN_NAME, ["getJWTToken", key, secret]);
-      }
+    }
 };
 
 

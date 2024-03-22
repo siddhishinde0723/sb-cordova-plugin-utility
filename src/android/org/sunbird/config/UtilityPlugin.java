@@ -191,10 +191,13 @@ public class UtilityPlugin extends CordovaPlugin {
         } else if (args.get(0).equals("decodeJWTToken")) {
             String token = args.optString(1);
             callbackContext.success(JWTTokenCreator.decodeToken(token));
+            return true;
          }else if (action.equalsIgnoreCase("getGoogleService")) {
             getGoogleService(cordova, callbackContext);
+            return true;
          }else if (action.equalsIgnoreCase("isGoogleServicesAvailable")) {
             isGoogleServicesAvailable(cordova, callbackContext);
+            return true;
         }else if (args.get(0).equals("getJWTToken")) {
             String key = args.optString(1);
             String secret = args.optString(2);
