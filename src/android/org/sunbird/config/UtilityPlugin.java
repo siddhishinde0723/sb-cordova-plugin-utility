@@ -195,10 +195,12 @@ public class UtilityPlugin extends CordovaPlugin {
          }else if (action.equalsIgnoreCase("getGoogleService")) {
             getGoogleService(cordova, callbackContext);
             return true;
-         }else if (action.equalsIgnoreCase("isGoogleServicesAvailable")) {
-            isGoogleServicesAvailable(cordova, callbackContext);
-            return true;
-        }else if (args.get(0).equals("getJWTToken")) {
+         }
+        //  else if (action.equalsIgnoreCase("isGoogleServicesAvailable")) {
+        //     isGoogleServicesAvailable(cordova, callbackContext);
+        //     return true;
+        // }
+        else if (args.get(0).equals("getJWTToken")) {
             String key = args.optString(1);
             String secret = args.optString(2);
             this.callbackContext.success(JWTTokenCreator.createJWToken(key, secret, null));
@@ -696,16 +698,16 @@ public class UtilityPlugin extends CordovaPlugin {
         this.cordova.getActivity().startActivity(intent);
         }
 
-    private static void isGoogleServicesAvailable(CordovaInterface cordova, CallbackContext callbackContext) {
-        try {
-            GoogleApiAvailability googleAPI = GoogleApiAvailability.getInstance();
-            int result = googleAPI.isGooglePlayServicesAvailable(cordova.getActivity());
-            if(result != ConnectionResult.SUCCESS) {
-                callbackContext.success("false");
-            }
-            callbackContext.success("true");
-        }catch (Exception e) {
-            callbackContext.error(e.getMessage());
-        }
-    }
+    // private static void isGoogleServicesAvailable(CordovaInterface cordova, CallbackContext callbackContext) {
+    //     try {
+    //         GoogleApiAvailability googleAPI = GoogleApiAvailability.getInstance();
+    //         int result = googleAPI.isGooglePlayServicesAvailable(cordova.getActivity());
+    //         if(result != ConnectionResult.SUCCESS) {
+    //             callbackContext.success("false");
+    //         }
+    //         callbackContext.success("true");
+    //     }catch (Exception e) {
+    //         callbackContext.error(e.getMessage());
+    //     }
+    // }
 }
