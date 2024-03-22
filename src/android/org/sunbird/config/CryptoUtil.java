@@ -1,4 +1,4 @@
-package org.sunbird.support;
+package org.sunbird.config;
 
 import java.io.UnsupportedEncodingException;
 import java.nio.charset.Charset;
@@ -13,6 +13,7 @@ import java.security.SecureRandom;
 import java.security.spec.InvalidKeySpecException;
 import java.security.spec.PKCS8EncodedKeySpec;
 import java.security.spec.X509EncodedKeySpec;
+import org.sunbird.support.Base64Util;
 
 import javax.crypto.BadPaddingException;
 import javax.crypto.Cipher;
