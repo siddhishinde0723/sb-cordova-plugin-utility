@@ -99,9 +99,9 @@ var sbutility = {
     removeFile: function (success, error) {
       exec(success, error, PLUGIN_NAME, PLUGIN_NAME, ["removeFile"]);
     },
-    isGoogleServicesAvailable: function (onSuccess, onError) {
-        exec(onSuccess, onError, PLUGIN_NAME, "isGoogleServicesAvailable", ["isGoogleServicesAvailable"])
-    },
+    // isGoogleServicesAvailable: function (onSuccess, onError) {
+    //     exec(onSuccess, onError, PLUGIN_NAME, "isGoogleServicesAvailable", ["isGoogleServicesAvailable"])
+    // },
     getJWTToken: function (key, secret, success, error) {
         exec(success, error, PLUGIN_NAME, "getJWTToken", ["getJWTToken", key, secret]);
     },
