@@ -4,7 +4,6 @@ package org.sunbird.config;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.sunbird.support.Base64Util;
-import org.sunbird.support.CryptoUtil;
 
 import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
