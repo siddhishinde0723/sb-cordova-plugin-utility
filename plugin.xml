@@ -13,7 +13,9 @@
     
     <!-- android -->
     <platform name="android">
-      <framework src="com.google.android.play:core:1.6.1" />
+      <framework src="com.android.installreferrer:installreferrer:1.1" />
+      <framework src="com.google.android.gms:play-services-safetynet:16.0.0" />  
+      <framework src="com.google.android.play:core:1.9.1" />
       <config-file target="res/xml/config.xml" parent="/*">
         <feature name="sbutility">
           <param name="android-package" value="org.sunbird.config.UtilityPlugin" />
@@ -34,6 +36,8 @@
       <source-file src="src/android/org/sunbird/support/Base64Util.java" target-dir="src/org/sunbird/support" />
       <source-file src="src/android/org/sunbird/support/JWTokenType.java" target-dir="src/org/sunbird/support" />
       <source-file src="src/android/org/sunbird/support/SunbirdFileHandler.java" target-dir="src/org/sunbird/support" />
+      <source-file src="src/android/org/sunbird/config/JWTokenType.java" target-dir="src/org/sunbird/config" />
+      <source-file src="src/android/org/sunbird/config/JWTTokenCreator.java" target-dir="src/org/sunbird/config" />
 
     </platform>
 

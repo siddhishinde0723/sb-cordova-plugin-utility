@@ -3,7 +3,7 @@ package org.sunbird.utm;
 import android.content.Context;
 import android.net.Uri;
 import android.os.RemoteException;
-import android.support.annotation.Nullable;
+import androidx.annotation.Nullable;
 import android.util.Log;
 
 import com.android.installreferrer.api.InstallReferrerClient;

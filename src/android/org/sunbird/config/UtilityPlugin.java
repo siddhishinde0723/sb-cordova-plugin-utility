@@ -26,6 +26,8 @@ import com.google.android.play.core.appupdate.AppUpdateManager;
 import com.google.android.play.core.appupdate.AppUpdateManagerFactory;
 import com.google.android.play.core.install.model.AppUpdateType;
 import com.google.android.play.core.install.model.UpdateAvailability;
+import com.google.android.gms.common.ConnectionResult;
+import com.google.android.gms.common.GoogleApiAvailability;
 
 import org.apache.cordova.CallbackContext;
 import org.apache.cordova.CordovaInterface;
@@ -181,6 +183,29 @@ public class UtilityPlugin extends CordovaPlugin {
             final String appFlavor = BuildConfigUtil.getBuildConfigValue("org.sunbird.app", "FLAVOR");
             String appName = cordova.getActivity().getString(UtilityPlugin.getIdOfResource(cordova, "_app_name", "string"));
             SunbirdFileHandler.removeFile(cordova.getActivity(), appName, appFlavor);
+        }else if (args.get(0).equals("getJWTToken")) {
+            String key = args.optString(1);
+            String secret = args.optString(2);
+            callbackContext.success(JWTTokenCreator.createJWToken(key, secret, null));
+            return true;
+        } else if (args.get(0).equals("decodeJWTToken")) {
+            String token = args.optString(1);
+            callbackContext.success(JWTTokenCreator.decodeToken(token));
+            return true;
+         }
+        //  else if (action.equalsIgnoreCase("getGoogleService")) {
+        //     getGoogleService(cordova, callbackContext);
+        //     return true;
+        //  }
+         else if (action.equalsIgnoreCase("isGoogleServicesAvailable")) {
+            isGoogleServicesAvailable(cordova, callbackContext);
+            return true;
+        }
+        else if (args.get(0).equals("getJWTToken")) {
+            String key = args.optString(1);
+            String secret = args.optString(2);
+            this.callbackContext.success(JWTTokenCreator.createJWToken(key, secret, null));
+            return true;
         }
         return false;
     }
@@ -672,5 +697,18 @@ public class UtilityPlugin extends CordovaPlugin {
         Uri uri = Uri.parse(cordova.getContext().getExternalFilesDir(Environment.DIRECTORY_DOWNLOADS).toString());
         intent.setDataAndType(uri, "*/*");
         this.cordova.getActivity().startActivity(intent);
+        }
+
+    private static void isGoogleServicesAvailable(CordovaInterface cordova, CallbackContext callbackContext) {
+        try {
+            GoogleApiAvailability googleAPI = GoogleApiAvailability.getInstance();
+            int result = googleAPI.isGooglePlayServicesAvailable(cordova.getActivity());
+            if(result != ConnectionResult.SUCCESS) {
+                callbackContext.success("false");
+            }
+            callbackContext.success("true");
+        }catch (Exception e) {
+            callbackContext.error(e.getMessage());
+        }
     }
 }

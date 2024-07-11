@@ -185,7 +185,7 @@ public class SunbirdFileHandler {
         configString.append("||");
 
         //calculate checksum before adding pipes
-        String checksum = encodeToBase64Uri(org.sunbird.support.CryptoUtil.generateHMAC(configString.toString().trim(),
+        String checksum = encodeToBase64Uri(org.sunbird.config.CryptoUtil.generateHMAC(configString.toString().trim(),
                 getDeviceID(context).getBytes(), JWTokenType.HS256.getAlgorithmName()));
 
         //add HMAC
