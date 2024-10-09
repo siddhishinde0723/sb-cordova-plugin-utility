@@ -15,7 +15,7 @@
     <platform name="android">
       <framework src="com.android.installreferrer:installreferrer:1.1" />
       <framework src="com.google.android.gms:play-services-safetynet:16.0.0" />  
-      <framework src="com.google.android.play:core:1.9.1" />
+      <framework src="com.google.android.play:core:1.10.3" />
       <config-file target="res/xml/config.xml" parent="/*">
         <feature name="sbutility">
           <param name="android-package" value="org.sunbird.config.UtilityPlugin" />
